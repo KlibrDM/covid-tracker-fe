@@ -1,0 +1,53 @@
+.register_button {
+  background-color: #f30909;
+  background: linear-gradient(30deg, #be1818, #f30909);
+  color: white;
+  padding: 14px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: baseline;
+}
+
+.form_group {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.form_group input {
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid lightgray;
+}
+
+.form_group select {
+  margin-bottom: 0.5rem;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid lightgray;
+}
+
+.form input[type="submit"] {
+  background-color: #12b3eb;
+  background: linear-gradient(30deg, #2e91fa, #12b3eb);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  text-decoration: none;
+  margin: 4px 2px;
+  cursor: pointer;
+}
+
+.error_message {
+  color: red;
+  margin-block-start: 0.4em;
+  margin-block-end: 0;
+}

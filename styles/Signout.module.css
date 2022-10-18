@@ -1,0 +1,9 @@
+.signout_button {
+  background-color: #f30909;
+  background: linear-gradient(30deg, #be1818, #f30909);
+  color: white;
+  padding: 14px 20px;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+}

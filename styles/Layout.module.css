@@ -1,0 +1,9 @@
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main {
+  flex-grow: 1;
+  width: calc(100% - 200px);
+}
