@@ -7,7 +7,7 @@ import { CategoryScale, ChartConfiguration } from "chart.js";
 import { Chart as ChartJS } from "react-chartjs-2";
 import { IData } from '../../models/data';
 import { getData } from '../../lib/get-data';
-import {  useState } from 'react';
+import {  useEffect, useState } from 'react';
 import LatestData from '../../components/latest-data';
 import { getLatestData } from '../../lib/get-latest-data';
 import { loadLocations } from '../../lib/load-locations';
@@ -84,6 +84,13 @@ const Cases: NextPage = (props: any) => {
     label: 'Bar',
     type: 'bar',
   }];
+
+  useEffect(() => {
+    async function loadZoom() {
+      const zoomPlugin = (await import("chartjs-plugin-zoom")).default;
+      Chart.register(zoomPlugin);
+    } loadZoom();
+  }, []);
 
   const handleStartDateChange = (event: React.MouseEvent<HTMLElement>, newStartDate: string | null) => {
     if (newStartDate) {
@@ -388,6 +395,20 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
         legend: {
           position: 'bottom',
           reverse: true
+        },
+        zoom: {
+          zoom: {
+            drag:{
+              enabled: true,
+            },
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true
+            },
+            mode: 'x'
+          }
         }
       },
     }
@@ -434,6 +455,20 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
         legend: {
           position: 'bottom'
         },
+        zoom: {
+          zoom: {
+            drag:{
+              enabled: true,
+            },
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true
+            },
+            mode: 'x'
+          }
+        }
       },
     }
   };
@@ -483,6 +518,20 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
         legend: {
           position: 'bottom'
         },
+        zoom: {
+          zoom: {
+            drag:{
+              enabled: true,
+            },
+            wheel: {
+              enabled: true,
+            },
+            pinch: {
+              enabled: true
+            },
+            mode: 'x'
+          }
+        }
       },
     }
   };
