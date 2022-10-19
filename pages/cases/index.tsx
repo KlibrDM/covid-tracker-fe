@@ -213,7 +213,6 @@ const Cases: NextPage = (props: any) => {
         newCasesChart.data.datasets[1].data = newCasesAverage;
         newCasesChart.data.labels = newCasesLabels;
 
-        console.log(newCasesChart);
         setNewCasesChart(_.cloneDeep(newCasesChart));
         
         //Total Cases

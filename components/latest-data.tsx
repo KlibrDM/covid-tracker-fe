@@ -1,3 +1,4 @@
+import { MenuItem, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { IData } from '../models/data';
 import { ILocation } from '../models/location';
@@ -134,18 +135,35 @@ const LatestData = (props: any) => {
     <div className={styles.latest_data_container}>
       <div className={styles.latest_data_header}>
         <h1>Latest Data</h1>
-        <input 
-          className={styles.latest_data_search} 
-          type="text" 
-          placeholder='Search'
-          value={searchValue}
-          onChange={handleSearchValueChange}
-        />
-        <select className={styles.latest_data_sort} value={sort} onChange={handleSortChange}>
-          {Object.keys(sortTypes).map((key, index) => (
-            <option key={index} value={sortTypes[key as keyof typeof sortTypes]}>{sortTypes[key as keyof typeof sortTypes]}</option>
-          ))}
-        </select>
+        <div className={styles.latest_data_header_inputs}>
+          <TextField
+            type="text"
+            name="search"
+            id="search"
+            label="Search"
+            variant="outlined"
+            value={searchValue}
+            onChange={handleSearchValueChange}
+            size="small"
+            fullWidth
+          />
+          <TextField
+            select
+            type="text"
+            name="select-sort"
+            id="search-sort"
+            label="Sort by"
+            variant="outlined"
+            value={sort}
+            onChange={handleSortChange}
+            size="small"
+            fullWidth
+          >
+            {Object.keys(sortTypes).map((key, index) => (
+              <MenuItem key={index} value={sortTypes[key as keyof typeof sortTypes]}>{sortTypes[key as keyof typeof sortTypes]}</MenuItem>
+            ))}
+          </TextField>
+        </div>
       </div>
       
       <div className={styles.latest_data_list}>

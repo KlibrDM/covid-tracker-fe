@@ -7,12 +7,10 @@
   margin: 6px;
 }
 
-.latest_data_search, .latest_data_sort {
-  padding: 0.4em 0.8em;
-  border-radius: 10px;
-  border: 1px solid lightgray;
-  margin-bottom: 10px;
-  width: calc(100% - 8px);
+.latest_data_header_inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .latest_data_list {
@@ -44,7 +42,6 @@
   margin-block-start: 0.4em;
   margin-block-end: 0.4em;
 }
-
 
 .latest_data_item p {
   text-align: center;

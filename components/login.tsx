@@ -4,6 +4,7 @@ import { login } from "../lib/login";
 import Router from 'next/router';
 import Dialog from "./dialog";
 import styles from '../styles/Login.module.css';
+import { Alert, TextField } from "@mui/material";
 
 const Login = () => {
   const [cookie, setCookie] = useCookies(["user"]);
@@ -45,18 +46,33 @@ const Login = () => {
       <button className={styles.login_button} onClick={() => setShowDialog(true)}>Login</button>
       {
         showDialog &&
-        <Dialog closeFunction={() => setShowDialog(false)}>
+        <Dialog closeFunction={() => setShowDialog(false)} width={400}>
           <form onSubmit={handleLogin} className={styles.form}>
-            <div className={styles.form_group}>
-              <label htmlFor="email">Email</label>
-              <input type="email" name="email" id="email" value={email} onChange={handleEmailChange} required/>
-            </div>
-            <div className={styles.form_group}>
-              <label htmlFor="passsword">Password</label>
-              <input type="password" name="password" id="password" value={password} onChange={handlePasswordChange} required/>
-            </div>
+            <h2>Login</h2>
+            <TextField
+              type="email"
+              name="email"
+              id="email"
+              label="Email"
+              variant="standard"
+              value={email}
+              onChange={handleEmailChange}
+              required
+              fullWidth
+            />
+            <TextField
+              type="password"
+              name="password"
+              id="password"
+              label="Password"
+              variant="standard"
+              value={password}
+              onChange={handlePasswordChange}
+              required
+              fullWidth
+            />
             <input type="submit" value="Login"/>
-            {errorMessage && <p className={styles.error_message}>{errorMessage.message}</p>}
+            {errorMessage && <Alert severity="error" className={styles.error_message}>{errorMessage.message}</Alert>}
           </form>
         </Dialog>
       }

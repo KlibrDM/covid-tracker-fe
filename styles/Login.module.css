@@ -12,18 +12,7 @@
   display: flex;
   flex-direction: column;
   align-items: baseline;
-}
-
-.form_group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form_group input {
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  padding: 8px 12px;
-  border: 1px solid lightgray;
+  gap: 15px;
 }
 
 .form input[type="submit"] {
@@ -39,7 +28,5 @@
 }
 
 .error_message {
-  color: red;
-  margin-block-start: 0.4em;
-  margin-block-end: 0;
+  width: 100%;
 }

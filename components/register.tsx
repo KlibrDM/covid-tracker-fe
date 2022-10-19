@@ -5,6 +5,7 @@ import Dialog from "./dialog";
 import styles from '../styles/Register.module.css';
 import { loadLocations } from "../lib/load-locations";
 import { register } from "../lib/register";
+import { Alert, FormControl, InputLabel, Select, TextField } from "@mui/material";
 
 const Register = () => {
   const [cookie, setCookie] = useCookies(["user"]);
@@ -57,28 +58,49 @@ const Register = () => {
       <button className={styles.register_button} onClick={handleDialogOpen}>Register</button>
       {
         showDialog &&
-        <Dialog closeFunction={() => setShowDialog(false)} width={300}>
+        <Dialog closeFunction={() => setShowDialog(false)} width={400}>
           <form onSubmit={handleRegister} className={styles.form}>
-            <div className={styles.form_group}>
-              <label htmlFor="email">Email</label>
-              <input type="email" name="email" id="email" value={email} onChange={handleEmailChange} required/>
-            </div>
-            <div className={styles.form_group}>
-              <label htmlFor="passsword">Password</label>
-              <input type="password" name="password" id="password" value={password} onChange={handlePasswordChange} required/>
-            </div>
-            <div className={styles.form_group}>
-              <label htmlFor="location">Location</label>
-              <select name="location" id="location" value={selectedLocation} onChange={handleLocationChange}>
+            <h2>Register</h2>
+            <TextField
+              type="email"
+              name="email"
+              id="email"
+              label="Email"
+              variant="standard"
+              value={email}
+              onChange={handleEmailChange}
+              required
+              fullWidth
+            />
+            <TextField
+              type="password"
+              name="password"
+              id="password"
+              label="Password"
+              variant="standard"
+              value={password}
+              onChange={handlePasswordChange}
+              required
+              fullWidth
+            />
+            <FormControl variant="standard" fullWidth>
+              <InputLabel shrink={true} htmlFor="location">Location</InputLabel>
+              <Select
+                native
+                labelId="location"
+                label="Location"
+                defaultValue={selectedLocation}
+                onChange={handleLocationChange}
+              >
                 {
                   locations.map((location, index) => (
                     <option key={index} value={location.code}>{location.name}</option>
                   ))
                 }
-              </select>
-            </div>
+              </Select>
+            </FormControl>
             <input type="submit" value="Register"/>
-            {errorMessage && <p className={styles.error_message}>{errorMessage.message}</p>}
+            {errorMessage && <Alert severity="error" className={styles.error_message}>{errorMessage.message}</Alert>}
           </form>
         </Dialog>
       }
