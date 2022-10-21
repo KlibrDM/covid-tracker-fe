@@ -3,7 +3,7 @@ import Head from 'next/head'
 import Layout from '../../components/layout'
 import styles from '../../styles/ChartPage.module.css'
 import Chart from "chart.js/auto";
-import { CategoryScale, ChartConfiguration } from "chart.js";
+import { BubbleDataPoint, CategoryScale, ChartConfiguration, ChartDataset, ChartTypeRegistry, ScatterDataPoint } from "chart.js";
 import { Chart as ChartJS } from "react-chartjs-2";
 import { IData } from '../../models/data';
 import { getData } from '../../lib/get-data';
@@ -18,6 +18,7 @@ import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { CircularProgress } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
+import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-options';
 
 Chart.register(CategoryScale);
 
@@ -53,10 +54,115 @@ const Cases: NextPage = (props: any) => {
   const locations = props.locations as ILocation[];
   const locationName = locations.find(e => e.code === location)?.name;
   const latestData = props.latestData as IData[];
+
+  //Get chart data
+  const chartLabels: number[] = props.chartLabels;
+  const newCasesChartData: number[] = props.newCasesChartData;
+  const newCasesAverage: number[] = props.newCasesAverage;
+  const reproductionRate: number[] = props.reproductionRate;
+  const totalCasesChartData: number[] = props.totalCasesChartData;
+  const perMillionCasesChartData: number[] = props.perMillionCasesChartData;
   
-  const [newCasesChart, setNewCasesChart] = useState(props.newCases as ChartConfiguration);
-  const [totalCasesChart, setTotalCasesChart] = useState(props.totalCases as ChartConfiguration);
-  const [perMillionCasesChart, setPerMillionCasesChart] = useState(props.perMillionCases as ChartConfiguration);
+  //Build charts
+  const newCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+    {
+      label: 'New Cases',
+      data: newCasesChartData,
+      fill: {
+        target: 'origin',
+        above: '#12b3eb77',
+        below: '#12b3eb77'
+      },
+      backgroundColor: '#12b3eb',
+      borderColor: '#12b3eb',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.1,
+      order: 2,
+    },
+    {
+      type: 'line',
+      label: '14 day average',
+      data: newCasesAverage,
+      backgroundColor: '#ffa32b',
+      borderColor: '#ffa32b',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.1,
+      order: 1,
+    },
+    {
+      type: 'line',
+      label: 'Reproduction rate',
+      data: reproductionRate,
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      borderWidth: 0,
+      pointRadius: 0,
+    }
+  ];
+  const newCasesChartConfiguration: ChartConfiguration = {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: newCasesChartDatasets
+    },
+    options: CASES_CHART_OPTIONS(newCasesChartDatasets)
+  };
+
+  const totalCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+    {
+      label: 'Total Cases',
+      data: totalCasesChartData,
+      fill: {
+        target: 'origin',
+        above: '#12b3eb77',
+        below: '#12b3eb77'
+      },
+      backgroundColor: '#12b3eb',
+      borderColor: '#12b3eb',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.1
+    }
+  ];
+  const totalCasesChartConfiguration: ChartConfiguration = {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: totalCasesChartDatasets
+    },
+    options: COMMON_CHART_OPTIONS
+  };
+
+  const perMillionCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+    {
+      label: 'Cases per 1M',
+      data: perMillionCasesChartData,
+      fill: {
+        target: 'origin',
+        above: '#12b3eb77',
+        below: '#12b3eb77'
+      },
+      backgroundColor: '#12b3eb',
+      borderColor: '#12b3eb',
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.1
+    }
+  ];
+  const perMillionCasesChartConfiguration: ChartConfiguration = {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: perMillionCasesChartDatasets
+    },
+    options: COMMON_CHART_OPTIONS
+  };
+
+  const [newCasesChart, setNewCasesChart] = useState(newCasesChartConfiguration);
+  const [totalCasesChart, setTotalCasesChart] = useState(totalCasesChartConfiguration);
+  const [perMillionCasesChart, setPerMillionCasesChart] = useState(perMillionCasesChartConfiguration);
 
   const newCasesChartRef = useRef(null);
   const totalCasesChartRef = useRef(null);
@@ -105,53 +211,53 @@ const Cases: NextPage = (props: any) => {
       const queryStartDate = newStartDate === 'ALL' ? '' : newStartDate;
 
       //load data with new start date
-      getData(location, ['new_cases', 'total_cases'], queryStartDate).then((data: IData[]) => {
-        //New Cases
-        const newCasesLabels: string[] = [];
+      getData(location, ['new_cases', 'total_cases', 'reproduction_rate'], queryStartDate).then((data: IData[]) => {
+        //Chart data arrays
+        const chartLabels: string[] = [];
         const newCasesChartData: number[] = [];
-
-        data.forEach(e => {
-          newCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
-          newCasesChartData.push(e.new_cases ?? 0);
-        });
-
-        const newCasesAverage = fourteenDayAverage(newCasesChartData);
-
-        newCasesChart.data.datasets[0].data = newCasesChartData;
-        newCasesChart.data.datasets[1].data = newCasesAverage;
-        newCasesChart.data.labels = newCasesLabels;
-
-        setNewCasesChart(_.cloneDeep(newCasesChart));
-        
-        //Total Cases
-        const totalCasesLabels: string[] = [];
+        const newCasesAverage: number[] = [];
+        const reproductionRate: number[] = [];
         const totalCasesChartData: number[] = [];
-
-        data.forEach(e => {
-          totalCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
-          totalCasesChartData.push(e.total_cases ?? 0);
-        });
-
-        totalCasesChart.data.datasets[0].data = totalCasesChartData;
-        totalCasesChart.data.labels = totalCasesLabels;
-
-        setTotalCasesChart(_.cloneDeep(totalCasesChart));
-
-        //Per Million Cases
-        const perMillionCasesLabels: string[] = [];
         const perMillionCasesChartData: number[] = [];
+
+        //Data
         const perNumber = 1000000;
         const population = locations.find(e => e.code === location)?.population ?? perNumber;
-        
+
+        //Push data to arrays
         data.forEach(e => {
-          perMillionCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
+          const date = moment(e.date).format('YYYY-MM-DD');
+          chartLabels.push(date);
+
+          //New cases chart
+          newCasesChartData.push(e.new_cases ?? 0);
+          reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
+
+          //Total cases chart
+          totalCasesChartData.push(e.total_cases ?? 0);
+
+          //Per million cases chart
           e.new_cases = e.new_cases ?? 0;
-          perMillionCasesChartData.push((e.new_cases / population) * perNumber);
+          perMillionCasesChartData.push((e.new_cases! / population) * perNumber);
         });
 
-        perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
-        perMillionCasesChart.data.labels = perMillionCasesLabels;
+        //Create 14 day average
+        newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
 
+        //Set data
+        newCasesChart.data.datasets[0].data = newCasesChartData;
+        newCasesChart.data.datasets[1].data = newCasesAverage;
+        newCasesChart.data.datasets[2].data = reproductionRate;
+        newCasesChart.data.labels = chartLabels;
+
+        totalCasesChart.data.datasets[0].data = totalCasesChartData;
+        totalCasesChart.data.labels = chartLabels;
+
+        perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
+        perMillionCasesChart.data.labels = chartLabels;
+
+        setNewCasesChart(_.cloneDeep(newCasesChart));
+        setTotalCasesChart(_.cloneDeep(totalCasesChart));
         setPerMillionCasesChart(_.cloneDeep(perMillionCasesChart));
 
         setStartDate(newStartDate);
@@ -219,53 +325,53 @@ const Cases: NextPage = (props: any) => {
       const queryStartDate = startDate === 'ALL' ? '' : startDate;
 
       //load data with new location
-      getData(newLocation, ['new_cases', 'total_cases'], queryStartDate).then((data: IData[]) => {
-        //New Cases
-        const newCasesLabels: string[] = [];
+      getData(newLocation, ['new_cases', 'total_cases', 'reproduction_rate'], queryStartDate).then((data: IData[]) => {
+        //Chart data arrays
+        const chartLabels: string[] = [];
         const newCasesChartData: number[] = [];
-
-        data.forEach(e => {
-          newCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
-          newCasesChartData.push(e.new_cases ?? 0);
-        });
-
-        const newCasesAverage = fourteenDayAverage(newCasesChartData);
-
-        newCasesChart.data.datasets[0].data = newCasesChartData;
-        newCasesChart.data.datasets[1].data = newCasesAverage;
-        newCasesChart.data.labels = newCasesLabels;
-
-        setNewCasesChart(_.cloneDeep(newCasesChart));
-        
-        //Total Cases
-        const totalCasesLabels: string[] = [];
+        const newCasesAverage: number[] = [];
+        const reproductionRate: number[] = [];
         const totalCasesChartData: number[] = [];
-
-        data.forEach(e => {
-          totalCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
-          totalCasesChartData.push(e.total_cases ?? 0);
-        });
-
-        totalCasesChart.data.datasets[0].data = totalCasesChartData;
-        totalCasesChart.data.labels = totalCasesLabels;
-
-        setTotalCasesChart(_.cloneDeep(totalCasesChart));
-
-        //Per Million Cases
-        const perMillionCasesLabels: string[] = [];
         const perMillionCasesChartData: number[] = [];
+
+        //Data
         const perNumber = 1000000;
         const population = locations.find(e => e.code === location)?.population ?? perNumber;
-        
+
+        //Push data to arrays
         data.forEach(e => {
-          perMillionCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
+          const date = moment(e.date).format('YYYY-MM-DD');
+          chartLabels.push(date);
+
+          //New cases chart
+          newCasesChartData.push(e.new_cases ?? 0);
+          reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
+
+          //Total cases chart
+          totalCasesChartData.push(e.total_cases ?? 0);
+
+          //Per million cases chart
           e.new_cases = e.new_cases ?? 0;
-          perMillionCasesChartData.push((e.new_cases / population) * perNumber);
+          perMillionCasesChartData.push((e.new_cases! / population) * perNumber);
         });
 
-        perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
-        perMillionCasesChart.data.labels = perMillionCasesLabels;
+        //Create 14 day average
+        newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
 
+        //Set data
+        newCasesChart.data.datasets[0].data = newCasesChartData;
+        newCasesChart.data.datasets[1].data = newCasesAverage;
+        newCasesChart.data.datasets[2].data = reproductionRate;
+        newCasesChart.data.labels = chartLabels;
+
+        totalCasesChart.data.datasets[0].data = totalCasesChartData;
+        totalCasesChart.data.labels = chartLabels;
+
+        perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
+        perMillionCasesChart.data.labels = chartLabels;
+
+        setNewCasesChart(_.cloneDeep(newCasesChart));
+        setTotalCasesChart(_.cloneDeep(totalCasesChart));
         setPerMillionCasesChart(_.cloneDeep(perMillionCasesChart));
 
         setLocation(newLocation);
@@ -375,213 +481,51 @@ const Cases: NextPage = (props: any) => {
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
-  const casesData: IData[] = await getData(location, ['new_cases', 'total_cases'], defaultStartDate);
+  const casesData: IData[] = await getData(location, ['new_cases', 'total_cases', 'reproduction_rate'], defaultStartDate);
   const latestData: IData[] = await getLatestData(undefined, ['new_cases','total_cases']);
 
-  /* --------------- */
-  /* New cases chart */
-  /* --------------- */
-  const newCasesLabels: string[] = [];
+  //Chart data arrays
+  const chartLabels: string[] = [];
   const newCasesChartData: number[] = [];
-
-  casesData.forEach(e => {
-    newCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
-    newCasesChartData.push(e.new_cases ?? 0);
-  });
-
-  //Create 14 day average
-  const newCasesAverage = fourteenDayAverage(newCasesChartData);
-
-  const newCasesChartConfiguration: ChartConfiguration = {
-    type: 'line',
-    data: {
-      labels: newCasesLabels,
-      datasets: [{
-        label: 'New Cases',
-        data: newCasesChartData,
-        fill: {
-          target: 'origin',
-          above: '#12b3eb77',
-          below: '#12b3eb77'
-        },
-        backgroundColor: '#12b3eb',
-        borderColor: '#12b3eb',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.1,
-        order: 2,
-      },
-      {
-        type: 'line',
-        label: '14 day average',
-        data: newCasesAverage,
-        backgroundColor: '#ffa32b',
-        borderColor: '#ffa32b',
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.1,
-        order: 1,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        intersect: false,
-        mode: 'index',
-      },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          reverse: true
-        },
-        zoom: {
-          zoom: {
-            drag:{
-              enabled: true,
-            },
-            wheel: {
-              enabled: true,
-            },
-            pinch: {
-              enabled: true
-            },
-            mode: 'x'
-          }
-        }
-      },
-    }
-  };
-
-  /* ----------------- */
-  /* Total cases chart */
-  /* ----------------- */
-  const totalCasesLabels: string[] = [];
+  const newCasesAverage: number[] = [];
+  const reproductionRate: number[] = [];
   const totalCasesChartData: number[] = [];
-
-  casesData.forEach(e => {
-    totalCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
-    totalCasesChartData.push(e.total_cases ?? 0);
-  });
-
-  const totalCasesChartConfiguration: ChartConfiguration = {
-    type: 'line',
-    data: {
-      labels: totalCasesLabels,
-      datasets: [{
-        label: 'Total Cases',
-        data: totalCasesChartData,
-        fill: {
-          target: 'origin',
-          above: '#12b3eb77',
-          below: '#12b3eb77'
-        },
-        backgroundColor: '#12b3eb',
-        borderColor: '#12b3eb',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        intersect: false,
-        mode: 'index',
-      },
-      plugins: {
-        legend: {
-          position: 'bottom'
-        },
-        zoom: {
-          zoom: {
-            drag:{
-              enabled: true,
-            },
-            wheel: {
-              enabled: true,
-            },
-            pinch: {
-              enabled: true
-            },
-            mode: 'x'
-          }
-        }
-      },
-    }
-  };
-
-  /* ----------------- */
-  /* Per million chart */
-  /* ----------------- */
-  const perMillionCasesLabels: string[] = [];
   const perMillionCasesChartData: number[] = [];
 
+  //Data
   const perNumber = 1000000;
   const population = locations.find(e => e.code === location)?.population ?? perNumber;
 
+  //Push data to arrays
   casesData.forEach(e => {
-    perMillionCasesLabels.push(moment(e.date).format('YYYY-MM-DD'));
+    const date = moment(e.date).format('YYYY-MM-DD');
+    chartLabels.push(date);
+
+    //New cases chart
+    newCasesChartData.push(e.new_cases ?? 0);
+    reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
+
+    //Total cases chart
+    totalCasesChartData.push(e.total_cases ?? 0);
+
+    //Per million cases chart
     e.new_cases = e.new_cases ?? 0;
     perMillionCasesChartData.push((e.new_cases! / population) * perNumber);
   });
 
-  const perMillionCasesChartConfiguration: ChartConfiguration = {
-    type: 'line',
-    data: {
-      labels: perMillionCasesLabels,
-      datasets: [{
-        label: 'Cases per 1M',
-        data: perMillionCasesChartData,
-        fill: {
-          target: 'origin',
-          above: '#12b3eb77',
-          below: '#12b3eb77'
-        },
-        backgroundColor: '#12b3eb',
-        borderColor: '#12b3eb',
-        borderWidth: 1,
-        pointRadius: 0,
-        tension: 0.1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        intersect: false,
-        mode: 'index',
-      },
-      plugins: {
-        legend: {
-          position: 'bottom'
-        },
-        zoom: {
-          zoom: {
-            drag:{
-              enabled: true,
-            },
-            wheel: {
-              enabled: true,
-            },
-            pinch: {
-              enabled: true
-            },
-            mode: 'x'
-          }
-        }
-      },
-    }
-  };
+  //Create 14 day average
+  newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
 
   return { props: {
     location: location,
     locations: locations,
-    newCases: newCasesChartConfiguration,
-    totalCases: totalCasesChartConfiguration,
-    perMillionCases: perMillionCasesChartConfiguration,
-    latestData: latestData
+    latestData: latestData,
+    chartLabels: chartLabels,
+    newCasesChartData: newCasesChartData,
+    newCasesAverage: newCasesAverage,
+    reproductionRate: reproductionRate,
+    totalCasesChartData: totalCasesChartData,
+    perMillionCasesChartData: perMillionCasesChartData,
   } };
 }
 
