@@ -7,7 +7,7 @@ import { CategoryScale, ChartConfiguration } from "chart.js";
 import { Chart as ChartJS } from "react-chartjs-2";
 import { IData } from '../../models/data';
 import { getData } from '../../lib/get-data';
-import {  useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import LatestData from '../../components/latest-data';
 import { getLatestData } from '../../lib/get-latest-data';
 import { loadLocations } from '../../lib/load-locations';
@@ -15,6 +15,7 @@ import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
+import { CircularProgress } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -46,14 +47,20 @@ const defaultChartType: IChartType = {
 const Cases: NextPage = (props: any) => {
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [chartType, setChartType] = useState<string>(defaultChartType.value);
+  const [chartReady, setChartReady] = useState<boolean>(false);
 
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
   const locationName = locations.find(e => e.code === location)?.name;
+  const latestData = props.latestData as IData[];
+  
   const [newCasesChart, setNewCasesChart] = useState(props.newCases as ChartConfiguration);
   const [totalCasesChart, setTotalCasesChart] = useState(props.totalCases as ChartConfiguration);
   const [perMillionCasesChart, setPerMillionCasesChart] = useState(props.perMillionCases as ChartConfiguration);
-  const latestData = props.latestData as IData[];
+
+  const newCasesChartRef = useRef(null);
+  const totalCasesChartRef = useRef(null);
+  const perMillionCasesChartRef = useRef(null);
 
   const startDates = [
     {date: 'ALL', label: 'ALL'},
@@ -89,6 +96,7 @@ const Cases: NextPage = (props: any) => {
     async function loadZoom() {
       const zoomPlugin = (await import("chartjs-plugin-zoom")).default;
       Chart.register(zoomPlugin);
+      setChartReady(true);
     } loadZoom();
   }, []);
 
@@ -148,6 +156,20 @@ const Cases: NextPage = (props: any) => {
 
         setStartDate(newStartDate);
       });
+
+      //Reset chart zoom
+      if (newCasesChartRef && newCasesChartRef.current) {
+        //@ts-ignore
+        newCasesChartRef.current.resetZoom();
+      }
+      if (totalCasesChartRef && totalCasesChartRef.current) {
+        //@ts-ignore
+        totalCasesChartRef.current.resetZoom();
+      }
+      if (perMillionCasesChartRef && perMillionCasesChartRef.current) {
+        //@ts-ignore
+        perMillionCasesChartRef.current.resetZoom();
+      }
     }
   };
 
@@ -297,20 +319,38 @@ const Cases: NextPage = (props: any) => {
           <div className={styles.single_chart_section}>
             <h4>New Cases</h4>
             <div className={styles.chart_container}>
-              <ChartJS type={newCasesChart.type} data={newCasesChart.data} options={newCasesChart.options}/>
+              {
+                chartReady
+                ? <ChartJS ref={newCasesChartRef} type={newCasesChart.type} data={newCasesChart.data} options={newCasesChart.options}/>
+                : <div className={styles.spinner_container}>
+                    <CircularProgress />
+                  </div>
+              }
             </div>
           </div>
           <div className={styles.multi_charts_section}>
             <div className={styles.single_chart_section}>
               <p>Total</p>
               <div className={styles.chart_container}>
-                <ChartJS type={totalCasesChart.type} data={totalCasesChart.data} options={totalCasesChart.options}/>
+                {
+                  chartReady
+                  ? <ChartJS ref={totalCasesChartRef} type={totalCasesChart.type} data={totalCasesChart.data} options={totalCasesChart.options}/>
+                  : <div className={styles.spinner_container}>
+                      <CircularProgress />
+                    </div>
+                }
               </div>
             </div>
             <div className={styles.single_chart_section}>
               <p>Per million</p>
               <div className={styles.chart_container}>
-                <ChartJS type={perMillionCasesChart.type} data={perMillionCasesChart.data} options={perMillionCasesChart.options}/>
+                {
+                  chartReady
+                  ? <ChartJS ref={perMillionCasesChartRef} type={perMillionCasesChart.type} data={perMillionCasesChart.data} options={perMillionCasesChart.options}/>
+                  : <div className={styles.spinner_container}>
+                      <CircularProgress />
+                    </div>
+                }
               </div>
             </div>
           </div>
