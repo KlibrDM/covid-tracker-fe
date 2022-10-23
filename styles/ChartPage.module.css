@@ -17,6 +17,10 @@
   gap: 10px;
 }
 
+.chart_controller_switch{
+  margin-left: auto;
+}
+
 .single_chart_section {
   display: flex;
   flex-direction: column;

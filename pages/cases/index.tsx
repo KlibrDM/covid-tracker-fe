@@ -15,7 +15,7 @@ import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, FormControlLabel, FormGroup, Switch } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
 import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-options';
@@ -48,6 +48,7 @@ const defaultChartType: IChartType = {
 const Cases: NextPage = (props: any) => {
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [chartType, setChartType] = useState<string>(defaultChartType.value);
+  const [showStringency, setShowStringency] = useState<boolean>(false);
   const [chartReady, setChartReady] = useState<boolean>(false);
 
   const [location, setLocation] = useState(props.location as string);
@@ -59,6 +60,7 @@ const Cases: NextPage = (props: any) => {
   const chartLabels: number[] = props.chartLabels;
   const newCasesChartData: number[] = props.newCasesChartData;
   const newCasesAverage: number[] = props.newCasesAverage;
+  const [stringencyIndex, setStringencyIndex] = useState<number[]>(props.stringencyIndex);
   const reproductionRate: number[] = props.reproductionRate;
   const totalCasesChartData: number[] = props.totalCasesChartData;
   const perMillionCasesChartData: number[] = props.perMillionCasesChartData;
@@ -78,7 +80,7 @@ const Cases: NextPage = (props: any) => {
       borderWidth: 1,
       pointRadius: 0,
       tension: 0.1,
-      order: 2,
+      order: 3,
     },
     {
       type: 'line',
@@ -89,7 +91,25 @@ const Cases: NextPage = (props: any) => {
       borderWidth: 2,
       pointRadius: 0,
       tension: 0.1,
+      order: 2,
+    },
+    {
+      type: 'line',
+      label: 'Stringency Index',
+      data: showStringency ? stringencyIndex : [],
+      fill: {
+        target: 'origin',
+        above: '#ceb3eb44',
+        below: '#ceb3eb44'
+      },
+      backgroundColor: '#ceb3eb',
+      borderColor: '#ceb3eb',
+      borderWidth: 1,
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      tension: 0.1,
       order: 1,
+      yAxisID: 'percentage',
     },
     {
       type: 'line',
@@ -99,7 +119,7 @@ const Cases: NextPage = (props: any) => {
       borderColor: 'transparent',
       borderWidth: 0,
       pointRadius: 0,
-    }
+    },
   ];
   const newCasesChartConfiguration: ChartConfiguration = {
     type: 'line',
@@ -211,11 +231,12 @@ const Cases: NextPage = (props: any) => {
       const queryStartDate = newStartDate === 'ALL' ? '' : newStartDate;
 
       //load data with new start date
-      getData(location, ['new_cases', 'total_cases', 'reproduction_rate'], queryStartDate).then((data: IData[]) => {
+      getData(location, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], queryStartDate).then((data: IData[]) => {
         //Chart data arrays
         const chartLabels: string[] = [];
         const newCasesChartData: number[] = [];
         const newCasesAverage: number[] = [];
+        const stringencyIndex: number[] = [];
         const reproductionRate: number[] = [];
         const totalCasesChartData: number[] = [];
         const perMillionCasesChartData: number[] = [];
@@ -231,6 +252,7 @@ const Cases: NextPage = (props: any) => {
 
           //New cases chart
           newCasesChartData.push(e.new_cases ?? 0);
+          stringencyIndex.push(e.stringency_index ?? 0);
           reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
 
           //Total cases chart
@@ -247,7 +269,8 @@ const Cases: NextPage = (props: any) => {
         //Set data
         newCasesChart.data.datasets[0].data = newCasesChartData;
         newCasesChart.data.datasets[1].data = newCasesAverage;
-        newCasesChart.data.datasets[2].data = reproductionRate;
+        newCasesChart.data.datasets[2].data = showStringency ? stringencyIndex : [];
+        newCasesChart.data.datasets[3].data = reproductionRate;
         newCasesChart.data.labels = chartLabels;
 
         totalCasesChart.data.datasets[0].data = totalCasesChartData;
@@ -255,6 +278,8 @@ const Cases: NextPage = (props: any) => {
 
         perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
         perMillionCasesChart.data.labels = chartLabels;
+
+        setStringencyIndex(stringencyIndex);
 
         setNewCasesChart(_.cloneDeep(newCasesChart));
         setTotalCasesChart(_.cloneDeep(totalCasesChart));
@@ -301,6 +326,18 @@ const Cases: NextPage = (props: any) => {
     }
   }
 
+  const handleStringencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked;
+    if(checked){
+      newCasesChart.data.datasets[2].data = stringencyIndex;
+    }
+    else{
+      newCasesChart.data.datasets[2].data = [];
+    }
+    setNewCasesChart(_.cloneDeep(newCasesChart));
+    setShowStringency(checked);
+  }
+
   const setUnsetArea = (chart: ChartConfiguration, chartType: IChartType) => {
     if(chartType.value === 'area'){
       chart.data.datasets.forEach(dataset => {
@@ -325,11 +362,12 @@ const Cases: NextPage = (props: any) => {
       const queryStartDate = startDate === 'ALL' ? '' : startDate;
 
       //load data with new location
-      getData(newLocation, ['new_cases', 'total_cases', 'reproduction_rate'], queryStartDate).then((data: IData[]) => {
+      getData(newLocation, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], queryStartDate).then((data: IData[]) => {
         //Chart data arrays
         const chartLabels: string[] = [];
         const newCasesChartData: number[] = [];
         const newCasesAverage: number[] = [];
+        const stringencyIndex: number[] = [];
         const reproductionRate: number[] = [];
         const totalCasesChartData: number[] = [];
         const perMillionCasesChartData: number[] = [];
@@ -345,6 +383,7 @@ const Cases: NextPage = (props: any) => {
 
           //New cases chart
           newCasesChartData.push(e.new_cases ?? 0);
+          stringencyIndex.push(e.stringency_index ?? 0);
           reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
 
           //Total cases chart
@@ -361,7 +400,8 @@ const Cases: NextPage = (props: any) => {
         //Set data
         newCasesChart.data.datasets[0].data = newCasesChartData;
         newCasesChart.data.datasets[1].data = newCasesAverage;
-        newCasesChart.data.datasets[2].data = reproductionRate;
+        newCasesChart.data.datasets[2].data = showStringency ? stringencyIndex : [];
+        newCasesChart.data.datasets[3].data = reproductionRate;
         newCasesChart.data.labels = chartLabels;
 
         totalCasesChart.data.datasets[0].data = totalCasesChartData;
@@ -369,6 +409,8 @@ const Cases: NextPage = (props: any) => {
 
         perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
         perMillionCasesChart.data.labels = chartLabels;
+
+        setStringencyIndex(stringencyIndex);
 
         setNewCasesChart(_.cloneDeep(newCasesChart));
         setTotalCasesChart(_.cloneDeep(totalCasesChart));
@@ -421,6 +463,10 @@ const Cases: NextPage = (props: any) => {
                 </ToggleButton>
               ))}
             </ToggleButtonGroup>
+
+            <FormGroup className={styles.chart_controller_switch}>
+              <FormControlLabel control={<Switch checked={showStringency} onChange={handleStringencyChange} />} label="Show stringency index" labelPlacement="start" />
+            </FormGroup>
           </div>
           <div className={styles.single_chart_section}>
             <h4>New Cases</h4>
@@ -481,13 +527,14 @@ const Cases: NextPage = (props: any) => {
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
-  const casesData: IData[] = await getData(location, ['new_cases', 'total_cases', 'reproduction_rate'], defaultStartDate);
+  const casesData: IData[] = await getData(location, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], defaultStartDate);
   const latestData: IData[] = await getLatestData(undefined, ['new_cases','total_cases']);
 
   //Chart data arrays
   const chartLabels: string[] = [];
   const newCasesChartData: number[] = [];
   const newCasesAverage: number[] = [];
+  const stringencyIndex: number[] = [];
   const reproductionRate: number[] = [];
   const totalCasesChartData: number[] = [];
   const perMillionCasesChartData: number[] = [];
@@ -503,6 +550,7 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
 
     //New cases chart
     newCasesChartData.push(e.new_cases ?? 0);
+    stringencyIndex.push(e.stringency_index ?? 0);
     reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
 
     //Total cases chart
@@ -523,6 +571,7 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
     chartLabels: chartLabels,
     newCasesChartData: newCasesChartData,
     newCasesAverage: newCasesAverage,
+    stringencyIndex: stringencyIndex,
     reproductionRate: reproductionRate,
     totalCasesChartData: totalCasesChartData,
     perMillionCasesChartData: perMillionCasesChartData,

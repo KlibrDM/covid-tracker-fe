@@ -37,13 +37,30 @@ export const CASES_CHART_OPTIONS = (data: ChartDataset<keyof ChartTypeRegistry, 
     intersect: false,
     mode: 'index',
   },
+  scales: {
+    y: {
+      type: 'linear',
+      display: true,
+    },
+    percentage: {
+      type: 'linear',
+      display: false,
+      position: 'right',
+      min: 0,
+      max: 100,
+      grid: {
+        drawOnChartArea: false,
+      },
+    }
+  },
   plugins: {
     legend: {
       position: 'bottom',
       reverse: true,
       labels: {
         filter: function(item, chart) {
-          return !item.text.includes('Reproduction rate');
+          return !item.text.includes('Reproduction rate') 
+            && !!chart.datasets[chart.datasets.findIndex(e => e.label === item.text)].data.length;
         }
       }
     },
