@@ -15,7 +15,7 @@ import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
-import { CircularProgress, FormControlLabel, FormGroup, Switch } from '@mui/material';
+import { CircularProgress, FormControlLabel, FormGroup, Switch, Tooltip } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
 import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-options';
@@ -465,7 +465,13 @@ const Cases: NextPage = (props: any) => {
             </ToggleButtonGroup>
 
             <FormGroup className={styles.chart_controller_switch}>
-              <FormControlLabel control={<Switch checked={showStringency} onChange={handleStringencyChange} />} label="Show stringency index" labelPlacement="start" />
+              <Tooltip
+                enterDelay={1000}
+                enterNextDelay={1000}
+                arrow={true}
+                title="The stringency index is a composite measure based on nine response indicators including school closures, workplace closures, and travel bans, rescaled to a value from 0 to 100">
+                <FormControlLabel control={<Switch checked={showStringency} onChange={handleStringencyChange} />} label="Show stringency index" labelPlacement="start" />
+              </Tooltip>
             </FormGroup>
           </div>
           <div className={styles.single_chart_section}>
