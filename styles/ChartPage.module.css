@@ -14,11 +14,18 @@
 
 .chart_controller {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: space-between;
 }
 
-.chart_controller_switch{
-  margin-left: auto;
+.chart_controller_buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.chart_controller_switch > label {
+  margin-left: 0;
 }
 
 .single_chart_section {

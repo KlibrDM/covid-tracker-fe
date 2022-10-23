@@ -434,35 +434,37 @@ const Cases: NextPage = (props: any) => {
             <h1 className={styles.page_title}>Covid-19 Cases in {locationName}</h1>
           </div>
           <div className={styles.chart_controller}>
-            <ToggleButtonGroup
-              color="primary"
-              value={chartType}
-              exclusive
-              onChange={handleChartTypeChange}
-              aria-label="Chart Type"
-              size="small"
-            >
-              {chartTypes.map((chartType) => (
-                <ToggleButton key={chartType.label} value={chartType.value} aria-label={chartType.label}>
-                  {chartType.label}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
+            <div className={styles.chart_controller_buttons}>
+              <ToggleButtonGroup
+                color="primary"
+                value={chartType}
+                exclusive
+                onChange={handleChartTypeChange}
+                aria-label="Chart Type"
+                size="small"
+              >
+                {chartTypes.map((chartType) => (
+                  <ToggleButton key={chartType.label} value={chartType.value} aria-label={chartType.label}>
+                    {chartType.label}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
 
-            <ToggleButtonGroup
-              color="primary"
-              value={startDate}
-              exclusive
-              onChange={handleStartDateChange}
-              aria-label="Start Date"
-              size="small"
-            >
-              {startDates.map((date) => (
-                <ToggleButton key={date.label} value={date.date} aria-label={date.label}>
-                  {date.label}
-                </ToggleButton>
-              ))}
-            </ToggleButtonGroup>
+              <ToggleButtonGroup
+                color="primary"
+                value={startDate}
+                exclusive
+                onChange={handleStartDateChange}
+                aria-label="Start Date"
+                size="small"
+              >
+                {startDates.map((date) => (
+                  <ToggleButton key={date.label} value={date.date} aria-label={date.label}>
+                    {date.label}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            </div>
 
             <FormGroup className={styles.chart_controller_switch}>
               <Tooltip

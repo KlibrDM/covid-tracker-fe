@@ -27,10 +27,11 @@ p {
 
 ::-webkit-scrollbar {
   width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fff;
+  background: transparent;
 }
  
 ::-webkit-scrollbar-thumb {
