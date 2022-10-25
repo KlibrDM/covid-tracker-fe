@@ -19,31 +19,16 @@ import { CircularProgress, FormControlLabel, FormGroup, Switch, Tooltip } from '
 import moment from 'moment';
 import _ from 'lodash';
 import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-options';
+import { DEFAULT_CHART_TYPES, DEFAULT_START_DATES } from '../../lib/constants';
+import { IChartType } from '../../models/charts';
 
 Chart.register(CategoryScale);
 
-interface IChartType {
-  value: 'line' | 'bar' | 'area',
-  label: 'Line' | 'Bar' | 'Area',
-  type: 'line' | 'bar';
-  fill?: {
-    target: string;
-    above: string;
-    below: string;
-  }
-}
+const startDates = DEFAULT_START_DATES;
+const chartTypes: IChartType[] = DEFAULT_CHART_TYPES;
 
-const defaultStartDate = moment().subtract(1, 'year').format('YYYY-MM-DD');
-const defaultChartType: IChartType = {
-  value: 'area',
-  label: 'Area',
-  type: 'line',
-  fill: {
-    target: 'origin',
-    above: '#12b3eb77',
-    below: '#12b3eb77'
-  },
-}
+const defaultStartDate = startDates[1].date;
+const defaultChartType: IChartType = chartTypes[0];
 
 const Cases: NextPage = (props: any) => {
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
@@ -188,36 +173,6 @@ const Cases: NextPage = (props: any) => {
   const totalCasesChartRef = useRef(null);
   const perMillionCasesChartRef = useRef(null);
 
-  const startDates = [
-    {date: 'ALL', label: 'ALL'},
-    {date: moment().subtract(1, 'year').format('YYYY-MM-DD'), label: '1Y'},
-    {date: moment().subtract(6, 'month').format('YYYY-MM-DD'), label: '6M'},
-    {date: moment().subtract(3, 'month').format('YYYY-MM-DD'), label: '3M'},
-    {date: moment().subtract(1, 'month').format('YYYY-MM-DD'), label: '1M'},
-    {date: moment().subtract(1, 'week').format('YYYY-MM-DD'), label: '1W'},
-  ];
-
-  const chartTypes: IChartType[] = [{
-    value: 'area',
-    label: 'Area',
-    type: 'line',
-    fill: {
-      target: 'origin',
-      above: '#12b3eb77',
-      below: '#12b3eb77'
-    }
-  },
-  {
-    value: 'line',
-    label: 'Line',
-    type: 'line',
-  },
-  {
-    value: 'bar',
-    label: 'Bar',
-    type: 'bar',
-  }];
-
   useEffect(() => {
     async function loadZoom() {
       const zoomPlugin = (await import("chartjs-plugin-zoom")).default;
@@ -232,39 +187,15 @@ const Cases: NextPage = (props: any) => {
 
       //load data with new start date
       getData(location, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], queryStartDate).then((data: IData[]) => {
-        //Chart data arrays
-        const chartLabels: string[] = [];
-        const newCasesChartData: number[] = [];
-        const newCasesAverage: number[] = [];
-        const stringencyIndex: number[] = [];
-        const reproductionRate: number[] = [];
-        const totalCasesChartData: number[] = [];
-        const perMillionCasesChartData: number[] = [];
-
-        //Data
-        const perNumber = 1000000;
-        const population = locations.find(e => e.code === location)?.population ?? perNumber;
-
-        //Push data to arrays
-        data.forEach(e => {
-          const date = moment(e.date).format('YYYY-MM-DD');
-          chartLabels.push(date);
-
-          //New cases chart
-          newCasesChartData.push(e.new_cases ?? 0);
-          stringencyIndex.push(e.stringency_index ?? 0);
-          reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
-
-          //Total cases chart
-          totalCasesChartData.push(e.total_cases ?? 0);
-
-          //Per million cases chart
-          e.new_cases = e.new_cases ?? 0;
-          perMillionCasesChartData.push((e.new_cases! / population) * perNumber);
-        });
-
-        //Create 14 day average
-        newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
+        const {
+          chartLabels,
+          newCasesChartData,
+          newCasesAverage,
+          stringencyIndex,
+          reproductionRate,
+          totalCasesChartData,
+          perMillionCasesChartData
+        } = prepareChartData(data, locations, location);
 
         //Set data
         newCasesChart.data.datasets[0].data = newCasesChartData;
@@ -363,39 +294,15 @@ const Cases: NextPage = (props: any) => {
 
       //load data with new location
       getData(newLocation, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], queryStartDate).then((data: IData[]) => {
-        //Chart data arrays
-        const chartLabels: string[] = [];
-        const newCasesChartData: number[] = [];
-        const newCasesAverage: number[] = [];
-        const stringencyIndex: number[] = [];
-        const reproductionRate: number[] = [];
-        const totalCasesChartData: number[] = [];
-        const perMillionCasesChartData: number[] = [];
-
-        //Data
-        const perNumber = 1000000;
-        const population = locations.find(e => e.code === location)?.population ?? perNumber;
-
-        //Push data to arrays
-        data.forEach(e => {
-          const date = moment(e.date).format('YYYY-MM-DD');
-          chartLabels.push(date);
-
-          //New cases chart
-          newCasesChartData.push(e.new_cases ?? 0);
-          stringencyIndex.push(e.stringency_index ?? 0);
-          reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
-
-          //Total cases chart
-          totalCasesChartData.push(e.total_cases ?? 0);
-
-          //Per million cases chart
-          e.new_cases = e.new_cases ?? 0;
-          perMillionCasesChartData.push((e.new_cases! / population) * perNumber);
-        });
-
-        //Create 14 day average
-        newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
+        const {
+          chartLabels,
+          newCasesChartData,
+          newCasesAverage,
+          stringencyIndex,
+          reproductionRate,
+          totalCasesChartData,
+          perMillionCasesChartData
+        } = prepareChartData(data, locations, location);
 
         //Set data
         newCasesChart.data.datasets[0].data = newCasesChartData;
@@ -538,6 +445,31 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
   const casesData: IData[] = await getData(location, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], defaultStartDate);
   const latestData: IData[] = await getLatestData(undefined, ['new_cases','total_cases']);
 
+  const {
+    chartLabels,
+    newCasesChartData,
+    newCasesAverage,
+    stringencyIndex,
+    reproductionRate,
+    totalCasesChartData,
+    perMillionCasesChartData
+  } = prepareChartData(casesData, locations, location);
+
+  return { props: {
+    location: location,
+    locations: locations,
+    latestData: latestData,
+    chartLabels: chartLabels,
+    newCasesChartData: newCasesChartData,
+    newCasesAverage: newCasesAverage,
+    stringencyIndex: stringencyIndex,
+    reproductionRate: reproductionRate,
+    totalCasesChartData: totalCasesChartData,
+    perMillionCasesChartData: perMillionCasesChartData,
+  } };
+}
+
+const prepareChartData = (casesData: IData[], locations: ILocation[], location: string) => {
   //Chart data arrays
   const chartLabels: string[] = [];
   const newCasesChartData: number[] = [];
@@ -572,18 +504,15 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
   //Create 14 day average
   newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
 
-  return { props: {
-    location: location,
-    locations: locations,
-    latestData: latestData,
-    chartLabels: chartLabels,
-    newCasesChartData: newCasesChartData,
-    newCasesAverage: newCasesAverage,
-    stringencyIndex: stringencyIndex,
-    reproductionRate: reproductionRate,
-    totalCasesChartData: totalCasesChartData,
-    perMillionCasesChartData: perMillionCasesChartData,
-  } };
+  return {
+    chartLabels,
+    newCasesChartData,
+    newCasesAverage,
+    stringencyIndex,
+    reproductionRate,
+    totalCasesChartData,
+    perMillionCasesChartData
+  };
 }
 
 export default Cases
