@@ -7,6 +7,12 @@
   margin: 6px;
 }
 
+.latest_data_header_date {
+  font-size: calc(0.5rem + 0.25vw);
+  color: #999;
+  margin-left: 6px;
+}
+
 .latest_data_header_inputs {
   display: flex;
   flex-direction: column;
