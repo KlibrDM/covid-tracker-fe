@@ -14,11 +14,6 @@ export const DEFAULT_CHART_TYPES: IChartType[] = [{
   value: 'area',
   label: 'Area',
   type: 'line',
-  fill: {
-    target: 'origin',
-    above: '#12b3eb77',
-    below: '#12b3eb77'
-  }
 },
 {
   value: 'line',
@@ -30,3 +25,31 @@ export const DEFAULT_CHART_TYPES: IChartType[] = [{
   label: 'Bar',
   type: 'bar',
 }];
+
+export const CASES_COLOR = '#12b3eb';
+export const CASES_FILL_COLORS = {
+  target: 'origin',
+  above: '#12b3eb77',
+  below: '#12b3eb77'
+}
+
+export const STRINGENCY_INDEX_COLOR = '#ceb3eb';
+export const STRINGENCY_INDEX_FILL_COLORS = {
+  target: 'origin',
+  above: '#ceb3eb44',
+  below: '#ceb3eb44'
+}
+
+export const DEATHS_COLOR = '#282828';
+export const DEATHS_FILL_COLORS = {
+  target: 'origin',
+  above: '#28282877',
+  below: '#28282877'
+}
+
+export const EXCESS_MORTALITY_COLOR = '#282828';
+export const EXCESS_MORTALITY_FILL_COLORS = {
+  target: 'origin',
+  above: '#ff232b77',
+  below: '#23ff2b77'
+}

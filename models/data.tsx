@@ -21,4 +21,6 @@ export interface IData {
   total_boosters?: number;
   new_vaccinations?: number;
   stringency_index?: number;
+  excess_mortality?: number;
+  excess_mortality_cumulative?: number;
 }

@@ -19,7 +19,7 @@ import { CircularProgress, FormControlLabel, FormGroup, Switch, Tooltip } from '
 import moment from 'moment';
 import _ from 'lodash';
 import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-options';
-import { CASES_COLOR, CASES_FILL_COLORS, DEFAULT_CHART_TYPES, DEFAULT_START_DATES, STRINGENCY_INDEX_COLOR, STRINGENCY_INDEX_FILL_COLORS } from '../../lib/constants';
+import { DEATHS_COLOR, DEATHS_FILL_COLORS, DEFAULT_CHART_TYPES, DEFAULT_START_DATES, EXCESS_MORTALITY_COLOR, EXCESS_MORTALITY_FILL_COLORS, STRINGENCY_INDEX_COLOR, STRINGENCY_INDEX_FILL_COLORS } from '../../lib/constants';
 import { IChartType } from '../../models/charts';
 
 Chart.register(CategoryScale);
@@ -30,7 +30,7 @@ const chartTypes: IChartType[] = DEFAULT_CHART_TYPES;
 const defaultStartDate = startDates[1].date;
 const defaultChartType: IChartType = chartTypes[0];
 
-const Cases: NextPage = (props: any) => {
+const Deaths: NextPage = (props: any) => {
   const [startDate, setStartDate] = useState<string>(defaultStartDate);
   const [chartType, setChartType] = useState<string>(defaultChartType.value);
   const [showStringency, setShowStringency] = useState<boolean>(false);
@@ -43,21 +43,22 @@ const Cases: NextPage = (props: any) => {
 
   //Get chart data
   const chartLabels: string[] = props.chartLabels;
-  const newCasesChartData: number[] = props.newCasesChartData;
-  const newCasesAverage: number[] = props.newCasesAverage;
+  const excessMortalityChartLabels: string[] = props.excessMortalityChartLabels;
+  const newDeathsChartData: number[] = props.newDeathsChartData;
+  const newDeathsAverage: number[] = props.newDeathsAverage;
   const [stringencyIndex, setStringencyIndex] = useState<number[]>(props.stringencyIndex);
-  const reproductionRate: number[] = props.reproductionRate;
-  const totalCasesChartData: number[] = props.totalCasesChartData;
-  const perMillionCasesChartData: number[] = props.perMillionCasesChartData;
+  const totalDeathsChartData: number[] = props.totalDeathsChartData;
+  const excessMortalityChartData: number[] = props.excessMortalityChartData;
+  const excessMortalityCumulativeChartData: number[] = props.excessMortalityCumulativeChartData;
   
   //Build charts
-  const newCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+  const newDeathsChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
     {
-      label: 'New Cases',
-      data: newCasesChartData,
-      fill: CASES_FILL_COLORS,
-      backgroundColor: CASES_COLOR,
-      borderColor: CASES_COLOR,
+      label: 'New Deaths',
+      data: newDeathsChartData,
+      fill: DEATHS_FILL_COLORS,
+      backgroundColor: DEATHS_COLOR,
+      borderColor: DEATHS_COLOR,
       borderWidth: 1,
       pointRadius: 0,
       tension: 0.1,
@@ -66,9 +67,9 @@ const Cases: NextPage = (props: any) => {
     {
       type: 'line',
       label: '14 day average',
-      data: newCasesAverage,
-      backgroundColor: '#ffa32b',
-      borderColor: '#ffa32b',
+      data: newDeathsAverage,
+      backgroundColor: '#ff232b',
+      borderColor: '#ff232b',
       borderWidth: 2,
       pointRadius: 0,
       tension: 0.1,
@@ -87,75 +88,78 @@ const Cases: NextPage = (props: any) => {
       tension: 0.1,
       order: 1,
       yAxisID: 'percentage',
+    }
+  ];
+  const newDeathsChartConfiguration: ChartConfiguration = {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: newDeathsChartDatasets
+    },
+    options: CASES_CHART_OPTIONS(newDeathsChartDatasets)
+  };
+
+  const totalDeathsChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+    {
+      label: 'Total Deaths',
+      data: totalDeathsChartData,
+      fill: DEATHS_FILL_COLORS,
+      backgroundColor: DEATHS_COLOR,
+      borderColor: DEATHS_COLOR,
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.1
+    }
+  ];
+  const totalDeathsChartConfiguration: ChartConfiguration = {
+    type: 'line',
+    data: {
+      labels: chartLabels,
+      datasets: totalDeathsChartDatasets
+    },
+    options: COMMON_CHART_OPTIONS
+  };
+
+  const excessMortalityChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+    {
+      label: 'Excess Mortality',
+      data: excessMortalityChartData,
+      fill: EXCESS_MORTALITY_FILL_COLORS,
+      backgroundColor: EXCESS_MORTALITY_COLOR,
+      borderColor: EXCESS_MORTALITY_COLOR,
+      borderWidth: 1,
+      pointRadius: 0,
+      tension: 0.1,
+      order: 2
     },
     {
       type: 'line',
-      label: 'Reproduction rate',
-      data: reproductionRate,
-      backgroundColor: 'transparent',
-      borderColor: 'transparent',
-      borderWidth: 0,
+      label: 'Ex. M. Cumulative',
+      data: excessMortalityCumulativeChartData,
+      backgroundColor: '#12b3eb',
+      borderColor: '#12b3eb',
+      borderWidth: 2,
       pointRadius: 0,
+      tension: 0.1,
+      order: 1,
     },
   ];
-  const newCasesChartConfiguration: ChartConfiguration = {
+  const excessMortalityChartConfiguration: ChartConfiguration = {
     type: 'line',
     data: {
-      labels: chartLabels,
-      datasets: newCasesChartDatasets
-    },
-    options: CASES_CHART_OPTIONS(newCasesChartDatasets)
-  };
-
-  const totalCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
-    {
-      label: 'Total Cases',
-      data: totalCasesChartData,
-      fill: CASES_FILL_COLORS,
-      backgroundColor: CASES_COLOR,
-      borderColor: CASES_COLOR,
-      borderWidth: 1,
-      pointRadius: 0,
-      tension: 0.1
-    }
-  ];
-  const totalCasesChartConfiguration: ChartConfiguration = {
-    type: 'line',
-    data: {
-      labels: chartLabels,
-      datasets: totalCasesChartDatasets
+      labels: excessMortalityChartLabels,
+      datasets: excessMortalityChartDatasets
     },
     options: COMMON_CHART_OPTIONS
   };
 
-  const perMillionCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
-    {
-      label: 'Cases per 1M',
-      data: perMillionCasesChartData,
-      fill: CASES_FILL_COLORS,
-      backgroundColor: CASES_COLOR,
-      borderColor: CASES_COLOR,
-      borderWidth: 1,
-      pointRadius: 0,
-      tension: 0.1
-    }
-  ];
-  const perMillionCasesChartConfiguration: ChartConfiguration = {
-    type: 'line',
-    data: {
-      labels: chartLabels,
-      datasets: perMillionCasesChartDatasets
-    },
-    options: COMMON_CHART_OPTIONS
-  };
+  const [newDeathsChart, setNewDeathsChart] = useState(newDeathsChartConfiguration);
+  const [totalDeathsChart, setTotalDeathsChart] = useState(totalDeathsChartConfiguration);
+  const [excessMortalityChart, setExcessMortalityChart] = useState(excessMortalityChartConfiguration);
 
-  const [newCasesChart, setNewCasesChart] = useState(newCasesChartConfiguration);
-  const [totalCasesChart, setTotalCasesChart] = useState(totalCasesChartConfiguration);
-  const [perMillionCasesChart, setPerMillionCasesChart] = useState(perMillionCasesChartConfiguration);
-
-  const newCasesChartRef = useRef(null);
-  const totalCasesChartRef = useRef(null);
-  const perMillionCasesChartRef = useRef(null);
+  const newDeathsChartRef = useRef(null);
+  const totalDeathsChartRef = useRef(null);
+  const excessMortalityChartRef = useRef(null);
 
   useEffect(() => {
     async function loadZoom() {
@@ -170,51 +174,52 @@ const Cases: NextPage = (props: any) => {
       const queryStartDate = newStartDate === 'ALL' ? '' : newStartDate;
 
       //load data with new start date
-      getData(location, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], queryStartDate).then((data: IData[]) => {
+      getData(location, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], queryStartDate).then((data: IData[]) => {
         const {
           chartLabels,
-          newCasesChartData,
-          newCasesAverage,
+          excessMortalityChartLabels,
+          newDeathsChartData,
+          newDeathsAverage,
           stringencyIndex,
-          reproductionRate,
-          totalCasesChartData,
-          perMillionCasesChartData
-        } = prepareChartData(data, locations, location);
+          totalDeathsChartData,
+          excessMortalityChartData,
+          excessMortalityCumulativeChartData
+        } = prepareChartData(data);
 
         //Set data
-        newCasesChart.data.datasets[0].data = newCasesChartData;
-        newCasesChart.data.datasets[1].data = newCasesAverage;
-        newCasesChart.data.datasets[2].data = showStringency ? stringencyIndex : [];
-        newCasesChart.data.datasets[3].data = reproductionRate;
-        newCasesChart.data.labels = chartLabels;
+        newDeathsChart.data.datasets[0].data = newDeathsChartData;
+        newDeathsChart.data.datasets[1].data = newDeathsAverage;
+        newDeathsChart.data.datasets[2].data = showStringency ? stringencyIndex : [];
+        newDeathsChart.data.labels = chartLabels;
 
-        totalCasesChart.data.datasets[0].data = totalCasesChartData;
-        totalCasesChart.data.labels = chartLabels;
+        totalDeathsChart.data.datasets[0].data = totalDeathsChartData;
+        totalDeathsChart.data.labels = chartLabels;
 
-        perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
-        perMillionCasesChart.data.labels = chartLabels;
+        excessMortalityChart.data.datasets[0].data = excessMortalityChartData;
+        excessMortalityChart.data.datasets[1].data = excessMortalityCumulativeChartData;
+        excessMortalityChart.data.labels = excessMortalityChartLabels;
 
         setStringencyIndex(stringencyIndex);
 
-        setNewCasesChart(_.cloneDeep(newCasesChart));
-        setTotalCasesChart(_.cloneDeep(totalCasesChart));
-        setPerMillionCasesChart(_.cloneDeep(perMillionCasesChart));
+        setNewDeathsChart(_.cloneDeep(newDeathsChart));
+        setTotalDeathsChart(_.cloneDeep(totalDeathsChart));
+        setExcessMortalityChart(_.cloneDeep(excessMortalityChart));
 
         setStartDate(newStartDate);
       });
 
       //Reset chart zoom
-      if (newCasesChartRef && newCasesChartRef.current) {
+      if (newDeathsChartRef && newDeathsChartRef.current) {
         //@ts-ignore
-        newCasesChartRef.current.resetZoom();
+        newDeathsChartRef.current.resetZoom();
       }
-      if (totalCasesChartRef && totalCasesChartRef.current) {
+      if (totalDeathsChartRef && totalDeathsChartRef.current) {
         //@ts-ignore
-        totalCasesChartRef.current.resetZoom();
+        totalDeathsChartRef.current.resetZoom();
       }
-      if (perMillionCasesChartRef && perMillionCasesChartRef.current) {
+      if (excessMortalityChartRef && excessMortalityChartRef.current) {
         //@ts-ignore
-        perMillionCasesChartRef.current.resetZoom();
+        excessMortalityChartRef.current.resetZoom();
       }
     }
   };
@@ -224,19 +229,20 @@ const Cases: NextPage = (props: any) => {
       const chartType = chartTypes.find(e => e.value === newChartType);
 
       if(chartType){
-        chartType.fill = CASES_FILL_COLORS;
+        chartType.fill = DEATHS_FILL_COLORS;
 
-        newCasesChart.type = chartType.type;
-        setUnsetArea(newCasesChart, chartType);
-        setNewCasesChart(_.cloneDeep(newCasesChart));
+        newDeathsChart.type = chartType.type;
+        setUnsetArea(newDeathsChart, chartType);
+        setNewDeathsChart(_.cloneDeep(newDeathsChart));
 
-        totalCasesChart.type = chartType.type;
-        setUnsetArea(totalCasesChart, chartType);
-        setTotalCasesChart(_.cloneDeep(totalCasesChart));
+        totalDeathsChart.type = chartType.type;
+        setUnsetArea(totalDeathsChart, chartType);
+        setTotalDeathsChart(_.cloneDeep(totalDeathsChart));
 
-        perMillionCasesChart.type = chartType.type;
-        setUnsetArea(perMillionCasesChart, chartType);
-        setPerMillionCasesChart(_.cloneDeep(perMillionCasesChart));
+        chartType.fill = EXCESS_MORTALITY_FILL_COLORS;
+        excessMortalityChart.type = chartType.type;
+        setUnsetArea(excessMortalityChart, chartType);
+        setExcessMortalityChart(_.cloneDeep(excessMortalityChart));
         
         setChartType(chartType.value);
       }
@@ -246,12 +252,12 @@ const Cases: NextPage = (props: any) => {
   const handleStringencyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     if(checked){
-      newCasesChart.data.datasets[2].data = stringencyIndex;
+      newDeathsChart.data.datasets[2].data = stringencyIndex;
     }
     else{
-      newCasesChart.data.datasets[2].data = [];
+      newDeathsChart.data.datasets[2].data = [];
     }
-    setNewCasesChart(_.cloneDeep(newCasesChart));
+    setNewDeathsChart(_.cloneDeep(newDeathsChart));
     setShowStringency(checked);
   }
 
@@ -279,35 +285,36 @@ const Cases: NextPage = (props: any) => {
       const queryStartDate = startDate === 'ALL' ? '' : startDate;
 
       //load data with new location
-      getData(newLocation, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], queryStartDate).then((data: IData[]) => {
+      getData(newLocation, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], queryStartDate).then((data: IData[]) => {
         const {
           chartLabels,
-          newCasesChartData,
-          newCasesAverage,
+          excessMortalityChartLabels,
+          newDeathsChartData,
+          newDeathsAverage,
           stringencyIndex,
-          reproductionRate,
-          totalCasesChartData,
-          perMillionCasesChartData
-        } = prepareChartData(data, locations, location);
+          totalDeathsChartData,
+          excessMortalityChartData,
+          excessMortalityCumulativeChartData
+        } = prepareChartData(data);
 
         //Set data
-        newCasesChart.data.datasets[0].data = newCasesChartData;
-        newCasesChart.data.datasets[1].data = newCasesAverage;
-        newCasesChart.data.datasets[2].data = showStringency ? stringencyIndex : [];
-        newCasesChart.data.datasets[3].data = reproductionRate;
-        newCasesChart.data.labels = chartLabels;
+        newDeathsChart.data.datasets[0].data = newDeathsChartData;
+        newDeathsChart.data.datasets[1].data = newDeathsAverage;
+        newDeathsChart.data.datasets[2].data = showStringency ? stringencyIndex : [];
+        newDeathsChart.data.labels = chartLabels;
 
-        totalCasesChart.data.datasets[0].data = totalCasesChartData;
-        totalCasesChart.data.labels = chartLabels;
+        totalDeathsChart.data.datasets[0].data = totalDeathsChartData;
+        totalDeathsChart.data.labels = chartLabels;
 
-        perMillionCasesChart.data.datasets[0].data = perMillionCasesChartData;
-        perMillionCasesChart.data.labels = chartLabels;
+        excessMortalityChart.data.datasets[0].data = excessMortalityChartData;
+        excessMortalityChart.data.datasets[1].data = excessMortalityCumulativeChartData;
+        excessMortalityChart.data.labels = excessMortalityChartLabels;
 
         setStringencyIndex(stringencyIndex);
 
-        setNewCasesChart(_.cloneDeep(newCasesChart));
-        setTotalCasesChart(_.cloneDeep(totalCasesChart));
-        setPerMillionCasesChart(_.cloneDeep(perMillionCasesChart));
+        setNewDeathsChart(_.cloneDeep(newDeathsChart));
+        setTotalDeathsChart(_.cloneDeep(totalDeathsChart));
+        setExcessMortalityChart(_.cloneDeep(excessMortalityChart));
 
         setLocation(newLocation);
       });
@@ -317,14 +324,14 @@ const Cases: NextPage = (props: any) => {
   return (
     <Layout>
       <Head>
-        <title>Cases</title>
-        <meta name="description" content="CovidTracker Cases" />
+        <title>Deaths</title>
+        <meta name="description" content="CovidTracker Deaths" />
       </Head>
 
       <section className={styles.page_container}>
         <section className={styles.charts_section}>
           <div className={styles.page_details}>
-            <h1 className={styles.page_title}>Covid-19 Cases in {locationName}</h1>
+            <h1 className={styles.page_title}>Covid-19 Deaths in {locationName}</h1>
           </div>
           <div className={styles.chart_controller}>
             <div className={styles.chart_controller_buttons}>
@@ -370,11 +377,11 @@ const Cases: NextPage = (props: any) => {
             </FormGroup>
           </div>
           <div className={styles.single_chart_section}>
-            <h4>New Cases</h4>
+            <h4>New Deaths</h4>
             <div className={styles.chart_container}>
               {
                 chartReady
-                ? <ChartJS ref={newCasesChartRef} type={newCasesChart.type} data={newCasesChart.data} options={newCasesChart.options}/>
+                ? <ChartJS ref={newDeathsChartRef} type={newDeathsChart.type} data={newDeathsChart.data} options={newDeathsChart.options}/>
                 : <div className={styles.spinner_container}>
                     <CircularProgress />
                   </div>
@@ -387,7 +394,7 @@ const Cases: NextPage = (props: any) => {
               <div className={styles.chart_container}>
                 {
                   chartReady
-                  ? <ChartJS ref={totalCasesChartRef} type={totalCasesChart.type} data={totalCasesChart.data} options={totalCasesChart.options}/>
+                  ? <ChartJS ref={totalDeathsChartRef} type={totalDeathsChart.type} data={totalDeathsChart.data} options={totalDeathsChart.options}/>
                   : <div className={styles.spinner_container}>
                       <CircularProgress />
                     </div>
@@ -395,11 +402,11 @@ const Cases: NextPage = (props: any) => {
               </div>
             </div>
             <div className={styles.single_chart_section}>
-              <p>Per million</p>
+              <p>Excess Mortality</p>
               <div className={styles.chart_container}>
                 {
                   chartReady
-                  ? <ChartJS ref={perMillionCasesChartRef} type={perMillionCasesChart.type} data={perMillionCasesChart.data} options={perMillionCasesChart.options}/>
+                  ? <ChartJS ref={excessMortalityChartRef} type={excessMortalityChart.type} data={excessMortalityChart.data} options={excessMortalityChart.options}/>
                   : <div className={styles.spinner_container}>
                       <CircularProgress />
                     </div>
@@ -413,10 +420,10 @@ const Cases: NextPage = (props: any) => {
             latestData={latestData} 
             location={location} 
             locations={locations}
-            key1="total_cases"
-            label1="Total cases"
-            key2="new_cases"
-            label2="New cases"
+            key1="total_deaths"
+            label1="Total deaths"
+            key2="new_deaths"
+            label2="New deaths"
             changeLocation={changeLocation}
           />
         </section>
@@ -428,77 +435,81 @@ const Cases: NextPage = (props: any) => {
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
-  const casesData: IData[] = await getData(location, ['new_cases', 'total_cases', 'reproduction_rate', 'stringency_index'], defaultStartDate);
-  const latestData: IData[] = await getLatestData(undefined, ['new_cases','total_cases']);
+  const deathsData: IData[] = await getData(location, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], defaultStartDate);
+  const latestData: IData[] = await getLatestData(undefined, ['new_deaths','total_deaths']);
 
   const {
     chartLabels,
-    newCasesChartData,
-    newCasesAverage,
+    excessMortalityChartLabels,
+    newDeathsChartData,
+    newDeathsAverage,
     stringencyIndex,
-    reproductionRate,
-    totalCasesChartData,
-    perMillionCasesChartData
-  } = prepareChartData(casesData, locations, location);
+    totalDeathsChartData,
+    excessMortalityChartData,
+    excessMortalityCumulativeChartData
+  } = prepareChartData(deathsData);
 
   return { props: {
     location: location,
     locations: locations,
     latestData: latestData,
     chartLabels: chartLabels,
-    newCasesChartData: newCasesChartData,
-    newCasesAverage: newCasesAverage,
+    excessMortalityChartLabels: excessMortalityChartLabels,
+    newDeathsChartData: newDeathsChartData,
+    newDeathsAverage: newDeathsAverage,
     stringencyIndex: stringencyIndex,
-    reproductionRate: reproductionRate,
-    totalCasesChartData: totalCasesChartData,
-    perMillionCasesChartData: perMillionCasesChartData,
+    totalDeathsChartData: totalDeathsChartData,
+    excessMortalityChartData: excessMortalityChartData,
+    excessMortalityCumulativeChartData: excessMortalityCumulativeChartData
   } };
 }
 
-const prepareChartData = (casesData: IData[], locations: ILocation[], location: string) => {
+const prepareChartData = (data: IData[]) => {
   //Chart data arrays
   const chartLabels: string[] = [];
-  const newCasesChartData: number[] = [];
-  const newCasesAverage: number[] = [];
+  const excessMortalityChartLabels: string[] = [];
+  const newDeathsChartData: number[] = [];
+  const newDeathsAverage: number[] = [];
   const stringencyIndex: number[] = [];
-  const reproductionRate: number[] = [];
-  const totalCasesChartData: number[] = [];
-  const perMillionCasesChartData: number[] = [];
-
-  //Data
-  const perNumber = 1000000;
-  const population = locations.find(e => e.code === location)?.population ?? perNumber;
+  const totalDeathsChartData: number[] = [];
+  const excessMortalityChartData: number[] = [];
+  const excessMortalityCumulativeChartData: number[] = [];
 
   //Push data to arrays
-  casesData.forEach(e => {
+  data.forEach(e => {
     const date = moment(e.date).format('YYYY-MM-DD');
     chartLabels.push(date);
 
-    //New cases chart
-    newCasesChartData.push(e.new_cases ?? 0);
+    //New deaths chart
+    newDeathsChartData.push(e.new_deaths ?? 0);
     stringencyIndex.push(e.stringency_index ?? 0);
-    reproductionRate.push((e.reproduction_rate && e.reproduction_rate > 0) ? e.reproduction_rate : 0);
 
-    //Total cases chart
-    totalCasesChartData.push(e.total_cases ?? 0);
+    //Total deaths chart
+    totalDeathsChartData.push(e.total_deaths ?? 0);
 
-    //Per million cases chart
-    e.new_cases = e.new_cases ?? 0;
-    perMillionCasesChartData.push((e.new_cases! / population) * perNumber);
+    //Excess mortality chart
+    if(e.excess_mortality !== undefined) {
+      excessMortalityChartData.push(e.excess_mortality);
+      excessMortalityChartLabels.push(date);
+    }
+    if(e.excess_mortality_cumulative !== undefined) {
+      excessMortalityCumulativeChartData.push(e.excess_mortality_cumulative);
+    }
   });
 
   //Create 14 day average
-  newCasesAverage.push(...fourteenDayAverage(newCasesChartData));
+  newDeathsAverage.push(...fourteenDayAverage(newDeathsChartData));
 
   return {
     chartLabels,
-    newCasesChartData,
-    newCasesAverage,
+    excessMortalityChartLabels,
+    newDeathsChartData,
+    newDeathsAverage,
     stringencyIndex,
-    reproductionRate,
-    totalCasesChartData,
-    perMillionCasesChartData
+    totalDeathsChartData,
+    excessMortalityChartData,
+    excessMortalityCumulativeChartData
   };
 }
 
-export default Cases
+export default Deaths
