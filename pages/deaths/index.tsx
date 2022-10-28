@@ -14,7 +14,7 @@ import { loadLocations } from '../../lib/load-locations';
 import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
+import { fourteenDayAverage, isChartEmpty } from '../../utils/calculate-14-day-average';
 import { CircularProgress, FormControlLabel, FormGroup, Switch, Tooltip } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
@@ -381,7 +381,9 @@ const Deaths: NextPage = (props: any) => {
             <div className={styles.chart_container}>
               {
                 chartReady
-                ? <ChartJS ref={newDeathsChartRef} type={newDeathsChart.type} data={newDeathsChart.data} options={newDeathsChart.options}/>
+                ? !isChartEmpty(newDeathsChart.data.datasets)
+                  ? <ChartJS ref={newDeathsChartRef} type={newDeathsChart.type} data={newDeathsChart.data} options={newDeathsChart.options}/>
+                  : <p className={styles.chart_no_data_text}>No data to display</p>
                 : <div className={styles.spinner_container}>
                     <CircularProgress />
                   </div>
@@ -394,7 +396,9 @@ const Deaths: NextPage = (props: any) => {
               <div className={styles.chart_container}>
                 {
                   chartReady
-                  ? <ChartJS ref={totalDeathsChartRef} type={totalDeathsChart.type} data={totalDeathsChart.data} options={totalDeathsChart.options}/>
+                  ? !isChartEmpty(totalDeathsChart.data.datasets)
+                    ? <ChartJS ref={totalDeathsChartRef} type={totalDeathsChart.type} data={totalDeathsChart.data} options={totalDeathsChart.options}/>
+                    : <p className={styles.chart_no_data_text}>No data to display</p>
                   : <div className={styles.spinner_container}>
                       <CircularProgress />
                     </div>
@@ -406,7 +410,9 @@ const Deaths: NextPage = (props: any) => {
               <div className={styles.chart_container}>
                 {
                   chartReady
-                  ? <ChartJS ref={excessMortalityChartRef} type={excessMortalityChart.type} data={excessMortalityChart.data} options={excessMortalityChart.options}/>
+                  ? !isChartEmpty(excessMortalityChart.data.datasets)
+                    ? <ChartJS ref={excessMortalityChartRef} type={excessMortalityChart.type} data={excessMortalityChart.data} options={excessMortalityChart.options}/>
+                    : <p className={styles.chart_no_data_text}>No data to display</p>
                   : <div className={styles.spinner_container}>
                       <CircularProgress />
                     </div>

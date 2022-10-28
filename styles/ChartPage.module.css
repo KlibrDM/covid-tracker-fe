@@ -53,6 +53,15 @@
   flex-grow: 1;
 }
 
+.chart_no_data_text{
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-70%, -50%);
+  font-size: 1em;
+  color: #999;
+}
+
 .spinner_container {
   display: flex;
   justify-content: center;

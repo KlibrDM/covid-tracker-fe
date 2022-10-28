@@ -14,7 +14,7 @@ import { loadLocations } from '../../lib/load-locations';
 import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
+import { fourteenDayAverage, isChartEmpty } from '../../utils/calculate-14-day-average';
 import { CircularProgress, FormControlLabel, FormGroup, Switch, Tooltip } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
@@ -374,7 +374,9 @@ const Cases: NextPage = (props: any) => {
             <div className={styles.chart_container}>
               {
                 chartReady
-                ? <ChartJS ref={newCasesChartRef} type={newCasesChart.type} data={newCasesChart.data} options={newCasesChart.options}/>
+                ? !isChartEmpty(newCasesChart.data.datasets)
+                  ? <ChartJS ref={newCasesChartRef} type={newCasesChart.type} data={newCasesChart.data} options={newCasesChart.options}/>
+                  : <p className={styles.chart_no_data_text}>No data to display</p>
                 : <div className={styles.spinner_container}>
                     <CircularProgress />
                   </div>
@@ -387,7 +389,9 @@ const Cases: NextPage = (props: any) => {
               <div className={styles.chart_container}>
                 {
                   chartReady
-                  ? <ChartJS ref={totalCasesChartRef} type={totalCasesChart.type} data={totalCasesChart.data} options={totalCasesChart.options}/>
+                  ? !isChartEmpty(totalCasesChart.data.datasets)
+                    ? <ChartJS ref={totalCasesChartRef} type={totalCasesChart.type} data={totalCasesChart.data} options={totalCasesChart.options}/>
+                    : <p className={styles.chart_no_data_text}>No data to display</p>
                   : <div className={styles.spinner_container}>
                       <CircularProgress />
                     </div>
@@ -399,7 +403,9 @@ const Cases: NextPage = (props: any) => {
               <div className={styles.chart_container}>
                 {
                   chartReady
-                  ? <ChartJS ref={perMillionCasesChartRef} type={perMillionCasesChart.type} data={perMillionCasesChart.data} options={perMillionCasesChart.options}/>
+                  ? !isChartEmpty(perMillionCasesChart.data.datasets)
+                    ? <ChartJS ref={perMillionCasesChartRef} type={perMillionCasesChart.type} data={perMillionCasesChart.data} options={perMillionCasesChart.options}/>
+                    : <p className={styles.chart_no_data_text}>No data to display</p>
                   : <div className={styles.spinner_container}>
                       <CircularProgress />
                     </div>
