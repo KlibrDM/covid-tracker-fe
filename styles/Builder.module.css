@@ -1,0 +1,54 @@
+.page_container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1em;
+  height: 98%;
+}
+
+.settings_date_picker{
+  display: flex;
+  gap: 10px;
+  margin: 10px 0px;
+}
+
+.settings_chip_container {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0px;
+}
+
+.settings_chip_paper {
+  display: flex;
+  overflow-x: auto;
+  list-style: none;
+  padding: 0.5em;
+  margin: 0;
+  flex-grow: 1;
+}
+
+.settings_chip_paper > p {
+  margin-block: 0.4em;
+}
+
+.settings_chip_button {
+  flex-shrink: 0;
+}
+
+.settings_name_container {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin: 10px 0px;
+}
+
+.chart_container {
+  position: relative;
+  flex-grow: 1;
+}
+
+.spinner_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}

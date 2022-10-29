@@ -14,13 +14,14 @@ import { loadLocations } from '../../lib/load-locations';
 import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import { fourteenDayAverage, isChartEmpty } from '../../utils/calculate-14-day-average';
+import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { CircularProgress, FormControlLabel, FormGroup, Switch, Tooltip } from '@mui/material';
 import moment from 'moment';
 import _ from 'lodash';
 import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-options';
 import { DEATHS_COLOR, DEATHS_FILL_COLORS, DEFAULT_CHART_TYPES, DEFAULT_START_DATES, EXCESS_MORTALITY_COLOR, EXCESS_MORTALITY_FILL_COLORS, STRINGENCY_INDEX_COLOR, STRINGENCY_INDEX_FILL_COLORS } from '../../lib/constants';
 import { IChartType } from '../../models/charts';
+import { isChartEmpty } from '../../utils/isChartEmpty';
 
 Chart.register(CategoryScale);
 
