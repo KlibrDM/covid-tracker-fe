@@ -62,6 +62,7 @@ const Builder: NextPage = (props: any) => {
   const [dialogLocation, setDialogLocation] = useState<string>(location);
   const [dialogChartType, setDialogChartType] = useState<ChartType>(ChartTypes[0]);
   const [dialogColor, setDialogColor] = useState<string>("#12b3eb");
+  let auxDialogColor = "#12b3eb";
 
   const customChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [];
   const customChartLabels: string[] = [];
@@ -365,8 +366,17 @@ const Builder: NextPage = (props: any) => {
             </Select>
           </FormControl>
 
-          <label htmlFor='color'>Color</label>
-          <input type="color" id="color" name="color" value={dialogColor} onChange={(e => {setDialogColor(e.target.value as string)})} />
+          <div className={styles.dialog_color_button}>
+            <label htmlFor='color'>Color</label>
+            <input
+              type="color"
+              id="color"
+              name="color"
+              value={dialogColor}
+              onChange={(e => {auxDialogColor = e.target.value})}
+              onBlur={(e => {setDialogColor(auxDialogColor)})}
+            />
+          </div>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleIndicatorClose}>Cancel</Button>
