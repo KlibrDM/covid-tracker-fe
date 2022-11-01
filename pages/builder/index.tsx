@@ -11,7 +11,7 @@ import { ILocation } from '../../models/location';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { CircularProgress, FormControlLabel, FormGroup, Switch, FormControl, InputLabel, Select, } from '@mui/material';
+import { CircularProgress, FormControlLabel, FormGroup, Switch, FormControl, InputLabel, Select, Slider, } from '@mui/material';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
@@ -32,6 +32,7 @@ import { getData } from '../../lib/get-data';
 import { IData } from '../../models/data';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { sevenDayAverage } from '../../utils/calculate-7-day-average';
+import { ColorToHex } from '../../utils/hexrgb';
 
 Chart.register(CategoryScale);
 
@@ -63,6 +64,12 @@ const Builder: NextPage = (props: any) => {
   const [dialogChartType, setDialogChartType] = useState<ChartType>(ChartTypes[0]);
   const [dialogColor, setDialogColor] = useState<string>("#12b3eb");
   let auxDialogColor = "#12b3eb";
+  const [dialogAreaColorAbove, setDialogAreaColorAbove] = useState<string>("#12b3eb");
+  const [dialogAreaColorAboveTransparency, setDialogAreaColorAboveTransparency] = useState<number>(0.6);
+  let auxDialogAreaColorAbove = "#12b3eb";
+  const [dialogAreaColorBelow, setDialogAreaColorBelow] = useState<string>("#12b3eb");
+  const [dialogAreaColorBelowTransparency, setDialogAreaColorBelowTransparency] = useState<number>(0.6);
+  let auxDialogAreaColorBelow = "#12b3eb";
 
   const customChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [];
   const customChartLabels: string[] = [];
@@ -105,7 +112,12 @@ const Builder: NextPage = (props: any) => {
       indicator: newIndicator,
       location_code: dialogLocation,
       chart_type: dialogChartType,
-      color: dialogColor
+      color: dialogColor,
+      fill: dialogChartType === "area" ? {
+        target: 'origin',
+        above: dialogAreaColorAbove + ColorToHex(Math.round((1 - dialogAreaColorAboveTransparency) * 255)),
+        below: dialogAreaColorBelow + ColorToHex(Math.round((1 - dialogAreaColorBelowTransparency) * 255))
+      } : undefined
     };
 
     //Add new value to chips and rebuild chart
@@ -127,6 +139,7 @@ const Builder: NextPage = (props: any) => {
         type: e.chart_type === 'area' ? 'line' : e.chart_type,
         label: e.location_code + ' - ' + e.indicator.label,
         data: [],
+        fill: e.chart_type === 'area' ? e.fill : undefined,
         backgroundColor: e.color,
         borderColor: e.color,
         borderWidth: 2,
@@ -377,6 +390,57 @@ const Builder: NextPage = (props: any) => {
               onBlur={(e => {setDialogColor(auxDialogColor)})}
             />
           </div>
+
+          {dialogChartType === 'area' &&
+            <div>
+              <div className={styles.dialog_color_button}>
+                <label htmlFor='colorAbove'>Area above 0</label>
+                <input
+                  type="color"
+                  id="colorAbove"
+                  name="colorAbove"
+                  value={dialogAreaColorAbove}
+                  onChange={(e => {auxDialogAreaColorAbove = e.target.value})}
+                  onBlur={(e => {setDialogAreaColorAbove(auxDialogAreaColorAbove)})}
+                />
+              </div>
+              <div className={styles.dialog_transparency_slider}>
+                <p>Transparency</p>
+                <Slider
+                  value={dialogAreaColorAboveTransparency}
+                  aria-label="Area color above transparency"
+                  valueLabelDisplay="auto"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onChange={(e, value) => {setDialogAreaColorAboveTransparency(value as number)}}
+                />
+              </div>
+              <div className={styles.dialog_color_button}>
+                <label htmlFor='colorBelow'>Area below 0</label>
+                <input
+                  type="color"
+                  id="colorBelow"
+                  name="colorBelow"
+                  value={dialogAreaColorBelow}
+                  onChange={(e => {auxDialogAreaColorBelow = e.target.value})}
+                  onBlur={(e => {setDialogAreaColorBelow(auxDialogAreaColorBelow)})}
+                />
+              </div>
+              <div className={styles.dialog_transparency_slider}>
+                <p>Transparency</p>
+                <Slider
+                  value={dialogAreaColorBelowTransparency}
+                  aria-label="Area color below transparency"
+                  valueLabelDisplay="auto"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  onChange={(e, value) => {setDialogAreaColorBelowTransparency(value as number)}}
+                />
+              </div>
+            </div>
+          }
         </DialogContent>
         <DialogActions>
           <Button onClick={handleIndicatorClose}>Cancel</Button>

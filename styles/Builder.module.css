@@ -57,4 +57,11 @@
   margin-top: 0.5em;
   display: flex;
   gap: 10px;
+  align-items: center;
+}
+
+.dialog_transparency_slider {
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }

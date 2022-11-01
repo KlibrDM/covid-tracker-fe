@@ -1,7 +1,7 @@
-export type ChartType = "area" | "line" | "bar";
+export type ChartType = "line" | "area" | "bar";
 export const ChartTypes: ChartType[] = [
-  "area",
   "line",
+  "area",
   "bar"
 ];
 
