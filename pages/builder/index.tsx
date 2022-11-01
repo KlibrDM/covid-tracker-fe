@@ -11,7 +11,7 @@ import { ILocation } from '../../models/location';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { CircularProgress, FormControlLabel, FormGroup, Switch, FormControl, InputLabel, Select, Slider, } from '@mui/material';
+import { CircularProgress, FormControlLabel, FormGroup, Switch } from '@mui/material';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
@@ -20,19 +20,16 @@ import TextField from '@mui/material/TextField';
 import Chip from '@mui/material/Chip';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import moment from 'moment';
 import _ from 'lodash';
-import { ChartType, ChartTypes, IChartValue, IIndicatorSettings, Indicators } from '../../models/custom-charts';
+import { IChartValue, IIndicatorSettings, Indicators } from '../../models/custom-charts';
 import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
 import { getData } from '../../lib/get-data';
 import { IData } from '../../models/data';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { sevenDayAverage } from '../../utils/calculate-7-day-average';
 import { ColorToHex } from '../../utils/hexrgb';
+import BuilderDialog from './components/dialog';
 
 Chart.register(CategoryScale);
 
@@ -45,7 +42,6 @@ const Builder: NextPage = (props: any) => {
 
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
-  const locationName = locations.find(e => e.code === location)?.name;
 
   const [startDate, setStartDate] = useState<moment.Moment>(moment().subtract(1, 'year'));
   const [endDate, setEndDate] = useState<moment.Moment>(moment());
@@ -56,20 +52,7 @@ const Builder: NextPage = (props: any) => {
   const [isPublic, setIsPublic] = useState<boolean>(false);
 
   const [isIndicatorDialogOpen, setIsIndicatorDialogOpen] = useState<boolean>(false);
-  const [dialogIndicator, setDialogIndicator] = useState<string>(Indicators[0].key);
-  const [dialogIndicatorPerMillion, setDialogIndicatorPerMillion] = useState<boolean>(false);
-  const [dialogIndicatorAverage7Days, setDialogIndicatorAverage7Days] = useState<boolean>(false);
-  const [dialogIndicatorAverage14Days, setDialogIndicatorAverage14Days] = useState<boolean>(false);
-  const [dialogLocation, setDialogLocation] = useState<string>(location);
-  const [dialogChartType, setDialogChartType] = useState<ChartType>(ChartTypes[0]);
-  const [dialogColor, setDialogColor] = useState<string>("#12b3eb");
-  let auxDialogColor = "#12b3eb";
-  const [dialogAreaColorAbove, setDialogAreaColorAbove] = useState<string>("#12b3eb");
-  const [dialogAreaColorAboveTransparency, setDialogAreaColorAboveTransparency] = useState<number>(0.6);
-  let auxDialogAreaColorAbove = "#12b3eb";
-  const [dialogAreaColorBelow, setDialogAreaColorBelow] = useState<string>("#12b3eb");
-  const [dialogAreaColorBelowTransparency, setDialogAreaColorBelowTransparency] = useState<number>(0.6);
-  let auxDialogAreaColorBelow = "#12b3eb";
+  const dialogRef = useRef(null);
 
   const customChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [];
   const customChartLabels: string[] = [];
@@ -93,30 +76,34 @@ const Builder: NextPage = (props: any) => {
 
   const handleIndicatorClickOpen = () => {
     setIsIndicatorDialogOpen(true);
+    //@ts-ignore
+    dialogRef.current.updateDialogState(true);
   };
 
   const handleIndicatorClose = () => {
     setIsIndicatorDialogOpen(false);
+    //@ts-ignore
+    dialogRef.current.updateDialogState(false);
   };
 
-  const handleIndicatorAdd = () => {
+  const handleIndicatorAdd = (data: any) => {
     const newIndicator: IIndicatorSettings = { 
-      key: dialogIndicator,
-      perMillion: dialogIndicatorPerMillion,
-      average: dialogIndicatorAverage7Days ? 7 : dialogIndicatorAverage14Days ? 14 : undefined,
-      label: Indicators.find(e => e.key === dialogIndicator)?.label + (dialogIndicatorPerMillion ? " per million" : "") + (dialogIndicatorAverage7Days ? " (7 days average)" : dialogIndicatorAverage14Days ? " (14 days average)" : ""),
+      key: data.dialogIndicator,
+      perMillion: data.dialogIndicatorPerMillion,
+      average: data.dialogIndicatorAverage7Days ? 7 : data.dialogIndicatorAverage14Days ? 14 : undefined,
+      label: Indicators.find(e => e.key === data.dialogIndicator)?.label + (data.dialogIndicatorPerMillion ? " per million" : "") + (data.dialogIndicatorAverage7Days ? " (7 days average)" : data.dialogIndicatorAverage14Days ? " (14 days average)" : ""),
     };
 
     const chartValue: IChartValue = {
       id: _.uniqueId(),
       indicator: newIndicator,
-      location_code: dialogLocation,
-      chart_type: dialogChartType,
-      color: dialogColor,
-      fill: dialogChartType === "area" ? {
+      location_code: data.dialogLocation,
+      chart_type: data.dialogChartType,
+      color: data.dialogColor,
+      fill: data.dialogChartType === "area" ? {
         target: 'origin',
-        above: dialogAreaColorAbove + ColorToHex(Math.round((1 - dialogAreaColorAboveTransparency) * 255)),
-        below: dialogAreaColorBelow + ColorToHex(Math.round((1 - dialogAreaColorBelowTransparency) * 255))
+        above: data.dialogAreaColorAbove + ColorToHex(Math.round((1 - data.dialogAreaColorAboveTransparency) * 255)),
+        below: data.dialogAreaColorBelow + ColorToHex(Math.round((1 - data.dialogAreaColorBelowTransparency) * 255))
       } : undefined
     };
 
@@ -126,6 +113,8 @@ const Builder: NextPage = (props: any) => {
     buildChart();
 
     setIsIndicatorDialogOpen(false);
+    //@ts-ignore
+    dialogRef.current.updateDialogState(false);
   };
 
   const buildChart = async () => {
@@ -301,152 +290,14 @@ const Builder: NextPage = (props: any) => {
         </section>
       </section>
 
-      <Dialog open={isIndicatorDialogOpen} onClose={handleIndicatorClose}>
-        <DialogTitle>New indicator</DialogTitle>
-        <DialogContent>
-          <FormControl variant="standard" fullWidth>
-            <InputLabel shrink={true} htmlFor="indicator">Indicator</InputLabel>
-            <Select
-              native
-              labelId="indicator"
-              label="Indicator"
-              defaultValue={dialogIndicator}
-              onChange={(e => {setDialogIndicator(e.target.value as string)})}
-            >
-              {
-                Indicators.map((indicator, index) => (
-                  <option key={index} value={indicator.key}>{indicator.label}</option>
-                ))
-              }
-            </Select>
-          </FormControl>
-
-          <FormGroup>
-            <FormControlLabel control={
-              <Switch checked={dialogIndicatorPerMillion} onChange={(e) => {setDialogIndicatorPerMillion(e.target.checked)}} />
-            } label="Calculate per million" labelPlacement="end" />
-          </FormGroup>
-
-          <FormGroup>
-            <FormControlLabel control={
-              <Switch checked={dialogIndicatorAverage7Days} onChange={(e) => {
-                setDialogIndicatorAverage7Days(e.target.checked);
-                if(e.target.checked) { setDialogIndicatorAverage14Days(false); }
-              }} />
-            } label="Calculate 7 day average" labelPlacement="end" />
-          </FormGroup>
-
-          <FormGroup>
-            <FormControlLabel control={
-              <Switch checked={dialogIndicatorAverage14Days} onChange={(e) => {
-                setDialogIndicatorAverage14Days(e.target.checked);
-                if(e.target.checked) { setDialogIndicatorAverage7Days(false); }
-              }} />
-            } label="Calculate 14 day average" labelPlacement="end" />
-          </FormGroup>
-
-          <FormControl variant="standard" fullWidth>
-            <InputLabel shrink={true} htmlFor="location">Location</InputLabel>
-            <Select
-              native
-              labelId="location"
-              label="Location"
-              defaultValue={dialogLocation}
-              onChange={(e => {setDialogLocation(e.target.value as string)})}
-            >
-              {
-                locations.map((location, index) => (
-                  <option key={index} value={location.code}>{location.name}</option>
-                ))
-              }
-            </Select>
-          </FormControl>
-
-          <FormControl variant="standard" fullWidth>
-            <InputLabel shrink={true} htmlFor="chart-type">Chart Type</InputLabel>
-            <Select
-              native
-              labelId="chart-type"
-              label="Chart Type"
-              defaultValue={dialogChartType}
-              onChange={(e => {setDialogChartType(e.target.value as ChartType)})}
-            >
-              {
-                ChartTypes.map((chartType, index) => (
-                  <option key={index} value={chartType}>{chartType.slice(0,1).toUpperCase() + chartType.slice(1)}</option>
-                ))
-              }
-            </Select>
-          </FormControl>
-
-          <div className={styles.dialog_color_button}>
-            <label htmlFor='color'>Color</label>
-            <input
-              type="color"
-              id="color"
-              name="color"
-              value={dialogColor}
-              onChange={(e => {auxDialogColor = e.target.value})}
-              onBlur={(e => {setDialogColor(auxDialogColor)})}
-            />
-          </div>
-
-          {dialogChartType === 'area' &&
-            <div>
-              <div className={styles.dialog_color_button}>
-                <label htmlFor='colorAbove'>Area above 0</label>
-                <input
-                  type="color"
-                  id="colorAbove"
-                  name="colorAbove"
-                  value={dialogAreaColorAbove}
-                  onChange={(e => {auxDialogAreaColorAbove = e.target.value})}
-                  onBlur={(e => {setDialogAreaColorAbove(auxDialogAreaColorAbove)})}
-                />
-              </div>
-              <div className={styles.dialog_transparency_slider}>
-                <p>Transparency</p>
-                <Slider
-                  value={dialogAreaColorAboveTransparency}
-                  aria-label="Area color above transparency"
-                  valueLabelDisplay="auto"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onChange={(e, value) => {setDialogAreaColorAboveTransparency(value as number)}}
-                />
-              </div>
-              <div className={styles.dialog_color_button}>
-                <label htmlFor='colorBelow'>Area below 0</label>
-                <input
-                  type="color"
-                  id="colorBelow"
-                  name="colorBelow"
-                  value={dialogAreaColorBelow}
-                  onChange={(e => {auxDialogAreaColorBelow = e.target.value})}
-                  onBlur={(e => {setDialogAreaColorBelow(auxDialogAreaColorBelow)})}
-                />
-              </div>
-              <div className={styles.dialog_transparency_slider}>
-                <p>Transparency</p>
-                <Slider
-                  value={dialogAreaColorBelowTransparency}
-                  aria-label="Area color below transparency"
-                  valueLabelDisplay="auto"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  onChange={(e, value) => {setDialogAreaColorBelowTransparency(value as number)}}
-                />
-              </div>
-            </div>
-          }
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleIndicatorClose}>Cancel</Button>
-          <Button onClick={handleIndicatorAdd}>Add</Button>
-        </DialogActions>
-      </Dialog>
+      <BuilderDialog
+        ref={dialogRef}
+        location={location}
+        locations={locations}
+        handleIndicatorClose={handleIndicatorClose}
+        handleIndicatorAdd={handleIndicatorAdd}
+        isIndicatorDialogOpen={isIndicatorDialogOpen}
+      />
     </Layout>
   )
 }
