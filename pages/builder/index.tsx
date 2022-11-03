@@ -22,14 +22,18 @@ import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import moment from 'moment';
 import _ from 'lodash';
-import { IChartValue, IIndicatorSettings, Indicators } from '../../models/custom-charts';
+import { IChart, IChartValue, IIndicatorSettings, Indicators } from '../../models/custom-charts';
 import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
 import { getData } from '../../lib/get-data';
 import { IData } from '../../models/data';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { sevenDayAverage } from '../../utils/calculate-7-day-average';
 import { ColorToHex } from '../../utils/hexrgb';
-import BuilderDialog from './components/dialog';
+import BuilderDialog from './components/builder-dialog';
+import UploadIcon from '@mui/icons-material/Upload';
+import SaveIcon from '@mui/icons-material/Save';
+import { saveCustomChart } from '../../lib/save-custom-chart';
+import BuilderLoadDialog from './components/load-dialog';
 
 Chart.register(CategoryScale);
 
@@ -38,6 +42,7 @@ const ListItem = styled('li')(({ theme }) => ({
 }));
 
 const Builder: NextPage = (props: any) => {
+  const user = props.user;
   const [chartReady, setChartReady] = useState<boolean>(false);
 
   const [location, setLocation] = useState(props.location as string);
@@ -52,7 +57,12 @@ const Builder: NextPage = (props: any) => {
   const [isPublic, setIsPublic] = useState<boolean>(false);
 
   const [isIndicatorDialogOpen, setIsIndicatorDialogOpen] = useState<boolean>(false);
-  const dialogRef = useRef(null);
+  const indicatorDialogRef = useRef(null);
+  const [isLoadDialogOpen, setIsLoadDialogOpen] = useState<boolean>(false);
+  const [newChartLoaded, setNewChartLoaded] = useState<boolean>(false);
+  const loadDialogRef = useRef(null);
+
+  const [isSaved, setIsSaved] = useState<boolean>(false);
 
   const customChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [];
   const customChartLabels: string[] = [];
@@ -77,19 +87,19 @@ const Builder: NextPage = (props: any) => {
   const handleIndicatorClickOpen = () => {
     setIsIndicatorDialogOpen(true);
     //@ts-ignore
-    dialogRef.current.updateDialogState(true);
+    indicatorDialogRef.current.updateDialogState(true);
   };
 
   const handleIndicatorClose = () => {
     setIsIndicatorDialogOpen(false);
     //@ts-ignore
-    dialogRef.current.updateDialogState(false);
+    indicatorDialogRef.current.updateDialogState(false);
   };
 
   const handleIndicatorAdd = (data: any) => {
     const newIndicator: IIndicatorSettings = { 
       key: data.dialogIndicator,
-      perMillion: data.dialogIndicatorPerMillion,
+      per_million: data.dialogIndicatorPerMillion,
       average: data.dialogIndicatorAverage7Days ? 7 : data.dialogIndicatorAverage14Days ? 14 : undefined,
       label: Indicators.find(e => e.key === data.dialogIndicator)?.label + (data.dialogIndicatorPerMillion ? " per million" : "") + (data.dialogIndicatorAverage7Days ? " (7 days average)" : data.dialogIndicatorAverage14Days ? " (14 days average)" : ""),
     };
@@ -114,7 +124,7 @@ const Builder: NextPage = (props: any) => {
 
     setIsIndicatorDialogOpen(false);
     //@ts-ignore
-    dialogRef.current.updateDialogState(false);
+    indicatorDialogRef.current.updateDialogState(false);
   };
 
   const buildChart = async () => {
@@ -146,7 +156,7 @@ const Builder: NextPage = (props: any) => {
         if(dataDay[e.indicator.key as keyof typeof dataDay]){
           let dayData = dataDay[e.indicator.key as keyof typeof dataDay] as number;
 
-          if(e.indicator.perMillion){
+          if(e.indicator.per_million){
             dayData = (dayData! / population) * perNumber
           }
 
@@ -179,6 +189,9 @@ const Builder: NextPage = (props: any) => {
     
     //Remove refresh icon
     setDateChanged(false);
+
+    //Set saved status
+    setIsSaved(false);
   
     //Reset chart zoom
     if (customChartRef && customChartRef.current) {
@@ -186,6 +199,62 @@ const Builder: NextPage = (props: any) => {
       customChartRef.current.resetZoom();
     }
   };
+
+  const handleSave = async () => {
+    const payload: IChart = {
+      ownerId: user._id,
+      is_public: isPublic,
+      name: chartName,
+      start_date: new Date(startDate.format('YYYY-MM-DD')),
+      end_date: new Date(endDate.format('YYYY-MM-DD')),
+      values: chipData
+    };
+
+    try {
+      const response = await saveCustomChart(payload, user.token);
+      if(response.message){
+        console.log(response.message);
+      }
+      else{
+        setIsSaved(true);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleLoadButtonClick = async () => {
+    setIsLoadDialogOpen(true);
+    //@ts-ignore
+    loadDialogRef.current.updateDialogState(true);
+  }
+
+  const handleLoadClose = () => {
+    setIsLoadDialogOpen(false);
+    //@ts-ignore
+    loadDialogRef.current.updateDialogState(false);
+  }
+
+  const handleLoadChart = (chart: IChart) => {
+    setIsLoadDialogOpen(false);
+    //@ts-ignore
+    loadDialogRef.current.updateDialogState(false);
+
+    setChartName(chart.name);
+    setIsPublic(chart.is_public);
+    setStartDate(moment(chart.start_date));
+    setEndDate(moment(chart.end_date));
+    setChipData(chart.values);
+    setNewChartLoaded(true);
+  }
+
+  //After state updated with new chart, rebuild chart
+  useEffect(() => {
+    if(newChartLoaded){
+      buildChart();
+      setNewChartLoaded(false);
+    }
+  }, [newChartLoaded]);
 
   useEffect(() => {
     async function loadZoom() {
@@ -205,7 +274,9 @@ const Builder: NextPage = (props: any) => {
       <section className={styles.page_container}>
         <section className={styles.settings_section}>
           <div className={styles.settings_section_header}>
-            <h2>Create custom chart</h2>
+            <h2>Create custom chart
+              {!user && <span className={styles.settings_section_header_login_warning}>Login to save charts</span>}
+            </h2>
           </div>
           <div className={styles.settings_date_picker}>
             <LocalizationProvider dateAdapter={AdapterMoment}>
@@ -272,10 +343,45 @@ const Builder: NextPage = (props: any) => {
           </div>
           
           <div className={styles.settings_name_container}>
-            <TextField fullWidth label="Chart Name" variant="standard" size='small' value={chartName} onChange={(e) => {setChartName(e.target.value)}}/>
+            <TextField
+              fullWidth
+              label="Chart Name"
+              variant="standard"
+              size='small'
+              value={chartName}
+              onChange={(e) => {
+                setChartName(e.target.value);
+                setIsSaved(false);
+              }}/>
             <FormGroup className={styles.settings_public_switch}>
-              <FormControlLabel control={<Switch checked={isPublic} onChange={(e) => {setIsPublic(e.target.checked)}} />} label="Public" labelPlacement="start" />
+              <FormControlLabel control={
+                <Switch checked={isPublic} onChange={(e) => {
+                  setIsPublic(e.target.checked);
+                  setIsSaved(false);
+                }} />
+              } label="Public" labelPlacement="start" />
             </FormGroup>
+            <Button
+              size="small"
+              variant="outlined"
+              color='primary'
+              endIcon={<UploadIcon />}
+              onClick={handleLoadButtonClick}
+              className={styles.settings_save_load_button}
+            >
+              Load
+            </Button>
+            <Button
+              size="small"
+              variant="outlined"
+              color='success'
+              endIcon={<SaveIcon />}
+              onClick={handleSave}
+              className={styles.settings_save_load_button}
+              disabled={isSaved || chartName === '' || chipData.length === 0 || !user}
+            >
+              Save
+            </Button>
           </div>
         </section>
         
@@ -291,12 +397,20 @@ const Builder: NextPage = (props: any) => {
       </section>
 
       <BuilderDialog
-        ref={dialogRef}
+        ref={indicatorDialogRef}
         location={location}
         locations={locations}
         handleIndicatorClose={handleIndicatorClose}
         handleIndicatorAdd={handleIndicatorAdd}
         isIndicatorDialogOpen={isIndicatorDialogOpen}
+      />
+
+      <BuilderLoadDialog 
+        ref={loadDialogRef}
+        user={user}
+        handleLoadClose={handleLoadClose}
+        handleLoadChart={handleLoadChart}
+        isLoadDialogOpen={isLoadDialogOpen}
       />
     </Layout>
   )
@@ -305,10 +419,12 @@ const Builder: NextPage = (props: any) => {
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
   return { props: {
     location: location,
     locations: locations,
+    user: user,
   } };
 }
 

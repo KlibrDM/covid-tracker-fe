@@ -14,7 +14,7 @@ export interface IChartAreaFill {
 export interface IIndicatorSettings {
   key: string,
   label: string,
-  perMillion?: boolean,
+  per_million?: boolean,
   average?: 7 | 14,
 }
 

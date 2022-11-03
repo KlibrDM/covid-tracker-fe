@@ -5,6 +5,13 @@
   height: 98%;
 }
 
+.settings_section_header_login_warning {
+  font-size: 1rem;
+  color: red;
+  margin-left: 1em;
+  font-weight: 500;
+}
+
 .settings_date_picker {
   display: flex;
   gap: 10px;
@@ -32,6 +39,11 @@
 
 .settings_chip_button {
   flex-shrink: 0;
+}
+
+.settings_save_load_button{
+  align-self: stretch;
+  padding: 0 2em;
 }
 
 .settings_name_container {
@@ -64,4 +76,21 @@
   display: flex;
   gap: 10px;
   align-items: center;
+}
+
+.load_dialog_section {
+  display: flex;
+  gap: 1em;
+}
+
+.load_dialog_group {
+  min-width: 200px;
+  max-width: 40vw;
+  height: 100%;
+}
+
+@media screen and (max-width: 600px) {
+  .load_dialog_group {
+    min-width: 40px;
+  }
 }
