@@ -78,9 +78,9 @@ const Builder: NextPage = (props: any) => {
   const [customChart, setCustomChart] = useState(customChartConfiguration);
   const customChartRef = useRef(null);
 
-  const handleDelete = (chipToDelete: IChartValue) => () => {
+  const handleChipDelete = (chipIndex: number) => () => {
     //Remove chip and rebuild chart
-    chipData.splice(chipData.findIndex(chip => chip.id === chipToDelete.id), 1);
+    chipData.splice(chipIndex, 1);
     buildChart();
   };
 
@@ -105,7 +105,6 @@ const Builder: NextPage = (props: any) => {
     };
 
     const chartValue: IChartValue = {
-      id: _.uniqueId(),
       indicator: newIndicator,
       location_code: data.dialogLocation,
       chart_type: data.dialogChartType,
@@ -313,15 +312,16 @@ const Builder: NextPage = (props: any) => {
           </div>
           
           <div className={styles.settings_chip_container}>
-            <Paper className={styles.settings_chip_paper} component="ul">
+            <Paper className={styles.settings_chip_paper} variant="outlined" component="ul">
               {
                 chipData.length 
-                ? chipData.map((data) => {
+                ? chipData.map((data, index) => {
                     return (
-                      <ListItem key={data.id}>
+                      <ListItem key={index}>
                         <Chip
+                          sx={{borderWidth: 2, borderStyle: 'solid', borderColor: data.color}}
                           label={data.location_code + ' - ' + data.indicator.label}
-                          onDelete={handleDelete(data)}
+                          onDelete={handleChipDelete(index)}
                           size="small"
                         />
                       </ListItem>

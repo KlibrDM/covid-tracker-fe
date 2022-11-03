@@ -19,7 +19,6 @@ export interface IIndicatorSettings {
 }
 
 export interface IChartValue {
-  id?: string,
   indicator: IIndicatorSettings;
   location_code: string;
   chart_type: "area" | "line" | "bar";
