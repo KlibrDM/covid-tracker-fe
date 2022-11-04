@@ -89,6 +89,11 @@
   height: 100%;
 }
 
+.load_dialog_indicators {
+  font-size: 0.7em;
+  text-align: left;
+}
+
 @media screen and (max-width: 600px) {
   .load_dialog_group {
     min-width: 40px;

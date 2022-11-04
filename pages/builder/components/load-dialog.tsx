@@ -1,6 +1,6 @@
 import styles from '../../../styles/Builder.module.css'
 import { forwardRef, useEffect, useState } from 'react';
-import { ToggleButtonGroup, ToggleButton, CircularProgress, } from '@mui/material';
+import { ToggleButtonGroup, ToggleButton, CircularProgress } from '@mui/material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -84,7 +84,20 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
                 }}
               >
                 {publicCharts.map((chart, index) => (
-                  <ToggleButton key={index} value={chart}>{chart.name}</ToggleButton>
+                  <ToggleButton key={index} value={chart} sx={{flexDirection: 'column'}}>
+                    {chart.name}
+                    <div className={styles.load_dialog_indicators}>
+                      {
+                        chart.values.length
+                        ? chart.values.map((data, index) => {
+                            return (
+                              <span key={index}>{data.location_code + ' - ' + data.indicator.label} / </span>
+                            );
+                          })
+                        : <p>No indicators</p>
+                      }
+                    </div>
+                  </ToggleButton>
                 ))}
               </ToggleButtonGroup>
             : <div className={styles.spinner_container}>
@@ -108,7 +121,20 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
                 }}
               >
                 {personalCharts.map((chart, index) => (
-                  <ToggleButton key={index} value={chart}>{chart.name}</ToggleButton>
+                  <ToggleButton key={index} value={chart} sx={{flexDirection: 'column'}}>
+                    {chart.name}
+                    <div className={styles.load_dialog_indicators}>
+                      {
+                        chart.values.length
+                        ? chart.values.map((data, index) => {
+                            return (
+                              <span key={index}>{data.location_code + ' - ' + data.indicator.label} / </span>
+                            );
+                          })
+                        : <p>No indicators</p>
+                      }
+                    </div>
+                  </ToggleButton>
                 ))}
               </ToggleButtonGroup>
             : user.token
