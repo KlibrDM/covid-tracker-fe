@@ -348,6 +348,7 @@ const Builder: NextPage = (props: any) => {
               label="Chart Name"
               variant="standard"
               size='small'
+              inputProps={{ maxLength: 120 }}
               value={chartName}
               onChange={(e) => {
                 setChartName(e.target.value);

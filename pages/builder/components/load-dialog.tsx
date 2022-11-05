@@ -6,9 +6,11 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { IChart } from '../../../models/custom-charts';
 import { getChartsPublic } from '../../../lib/get-charts-public';
 import { getChartsPersonal } from '../../../lib/get-charts-personal';
+import { deleteChart } from '../../../lib/delete-chart';
 
 const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
   const user = props.user || {};
@@ -17,10 +19,10 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
 
   const [isLoadDialogOpen, setIsLoadDialogOpen] = useState<boolean>(props.isLoadDialogOpen);
 
-  const [publicCharts, setPublicCharts] = useState<IChart[]>([]);
-  const [personalCharts, setPersonalCharts] = useState<IChart[]>([]);
+  const [publicCharts, setPublicCharts] = useState<(IChart & {_id: string})[]>([]);
+  const [personalCharts, setPersonalCharts] = useState<(IChart & {_id: string})[]>([]);
 
-  const [selectedChart, setSelectedChart] = useState<IChart | null>(null);
+  const [selectedChart, setSelectedChart] = useState<(IChart & {_id: string}) | null>(null);
 
   const [publicLoaded, setPublicLoaded] = useState<boolean>(false);
   const [personalLoaded, setPersonalLoaded] = useState<boolean>(false);
@@ -59,6 +61,18 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
     }
   }
 
+  const handleChartDelete = async (chart: IChart & {_id: string}) => {
+    if(chart._id){
+      deleteChart(chart._id, user.token).then((data) => {
+        //If sucessful, remove chart from personalCharts
+        if(data.message === "Chart deleted"){
+          setPersonalCharts(personalCharts.filter(c => c._id !== chart._id));
+          setPublicCharts(publicCharts.filter(c => c._id !== chart._id));
+        }
+      });
+    }
+  }
+
   ref.current = {
     updateDialogState
   }
@@ -84,19 +98,12 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
                 }}
               >
                 {publicCharts.map((chart, index) => (
-                  <ToggleButton key={index} value={chart} sx={{flexDirection: 'column'}}>
+                  <ToggleButton
+                    key={index}
+                    value={chart}
+                    sx={{justifyContent: 'space-between', paddingLeft: '0.8em', textAlign: 'left'}}
+                  >
                     {chart.name}
-                    <div className={styles.load_dialog_indicators}>
-                      {
-                        chart.values.length
-                        ? chart.values.map((data, index) => {
-                            return (
-                              <span key={index}>{data.location_code + ' - ' + data.indicator.label} / </span>
-                            );
-                          })
-                        : <p>No indicators</p>
-                      }
-                    </div>
                   </ToggleButton>
                 ))}
               </ToggleButtonGroup>
@@ -121,18 +128,19 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
                 }}
               >
                 {personalCharts.map((chart, index) => (
-                  <ToggleButton key={index} value={chart} sx={{flexDirection: 'column'}}>
+                  <ToggleButton
+                    key={index}
+                    value={chart}
+                    sx={{justifyContent: 'space-between', paddingLeft: '0.8em', textAlign: 'left'}}
+                  >
                     {chart.name}
-                    <div className={styles.load_dialog_indicators}>
-                      {
-                        chart.values.length
-                        ? chart.values.map((data, index) => {
-                            return (
-                              <span key={index}>{data.location_code + ' - ' + data.indicator.label} / </span>
-                            );
-                          })
-                        : <p>No indicators</p>
-                      }
+                    <div
+                      className={styles.load_dialog_delete}
+                      aria-label="delete"
+                      onClick={() => {
+                        handleChartDelete(chart);
+                      }}>
+                      <DeleteIcon fontSize='inherit' />
                     </div>
                   </ToggleButton>
                 ))}

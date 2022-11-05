@@ -89,9 +89,10 @@
   height: 100%;
 }
 
-.load_dialog_indicators {
-  font-size: 0.7em;
-  text-align: left;
+.load_dialog_delete {
+  display: flex;
+  align-items: center;
+  font-size: 1.3em;
 }
 
 @media screen and (max-width: 600px) {
