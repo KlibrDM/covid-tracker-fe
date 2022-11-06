@@ -32,8 +32,10 @@ import { ColorToHex } from '../../utils/hexrgb';
 import BuilderDialog from './components/builder-dialog';
 import UploadIcon from '@mui/icons-material/Upload';
 import SaveIcon from '@mui/icons-material/Save';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { saveCustomChart } from '../../lib/save-custom-chart';
 import BuilderLoadDialog from './components/load-dialog';
+import { updateCustomChart } from '../../lib/update-custom-chart';
 
 Chart.register(CategoryScale);
 
@@ -52,6 +54,8 @@ const Builder: NextPage = (props: any) => {
   const [endDate, setEndDate] = useState<moment.Moment>(moment());
   const [dateChanged, setDateChanged] = useState<boolean>(false);
 
+  const [loadedChartId, setLoadedChartId] = useState<string | null>(null);
+  const [loadedChartOwner, setLoadedChartOwner] = useState<string | null>(null);
   const [chipData, setChipData] = useState<IChartValue[]>([]);
   const [chartName, setChartName] = useState<string>("New chart");
   const [isPublic, setIsPublic] = useState<boolean>(false);
@@ -216,6 +220,31 @@ const Builder: NextPage = (props: any) => {
       }
       else{
         setIsSaved(true);
+        setLoadedChartId(response._id);
+        setLoadedChartOwner(response.ownerId);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleUpdate = async () => {
+    const payload: IChart = {
+      ownerId: user._id,
+      is_public: isPublic,
+      name: chartName,
+      start_date: new Date(startDate.format('YYYY-MM-DD')),
+      end_date: new Date(endDate.format('YYYY-MM-DD')),
+      values: chipData
+    };
+
+    try {
+      const response = await updateCustomChart(payload, loadedChartId!, user.token);
+      if(response.message){
+        console.log(response.message);
+      }
+      else{
+        setIsSaved(true);
       }
     } catch (err) {
       console.log(err);
@@ -234,11 +263,13 @@ const Builder: NextPage = (props: any) => {
     loadDialogRef.current.updateDialogState(false);
   }
 
-  const handleLoadChart = (chart: IChart) => {
+  const handleLoadChart = (chart: (IChart & {_id: string})) => {
     setIsLoadDialogOpen(false);
     //@ts-ignore
     loadDialogRef.current.updateDialogState(false);
 
+    setLoadedChartId(chart._id);
+    setLoadedChartOwner(chart.ownerId);
     setChartName(chart.name);
     setIsPublic(chart.is_public);
     setStartDate(moment(chart.start_date));
@@ -372,6 +403,19 @@ const Builder: NextPage = (props: any) => {
             >
               Load
             </Button>
+            {loadedChartId && user && loadedChartOwner === user._id &&
+              <Button
+                size="small"
+                variant="outlined"
+                color='warning'
+                endIcon={<AutoFixHighIcon />}
+                onClick={handleUpdate}
+                className={styles.settings_save_load_button}
+                disabled={isSaved || chartName === '' || chipData.length === 0 || !user}
+              >
+                Modify
+              </Button>
+            }
             <Button
               size="small"
               variant="outlined"
@@ -381,7 +425,7 @@ const Builder: NextPage = (props: any) => {
               className={styles.settings_save_load_button}
               disabled={isSaved || chartName === '' || chipData.length === 0 || !user}
             >
-              Save
+              {loadedChartId ? 'Save New' : 'Save'}
             </Button>
           </div>
         </section>
