@@ -20,6 +20,8 @@ import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
 import AddchartIcon from '@mui/icons-material/Addchart';
 import InsightsIcon from '@mui/icons-material/Insights';
 import InfoIcon from '@mui/icons-material/Info';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import DescriptionIcon from '@mui/icons-material/Description';
 
 const Nav = (props: any) => {
   const {cookies} = props;
@@ -122,12 +124,30 @@ const Nav = (props: any) => {
             </List>
           </Collapse>
 
+          <Link href="/locations">
+            <ListItemButton sx={{padding: 1}} selected={currentRoute === '/locations'}>
+              <ListItemIcon sx={{minWidth: 36}}>
+                <LocationOnIcon sx={{color: 'white'}} />
+              </ListItemIcon>
+              <ListItemText primary="Locations" />
+            </ListItemButton>
+          </Link>
+
           <Link href="/builder">
             <ListItemButton sx={{padding: 1}} selected={currentRoute === '/builder'}>
               <ListItemIcon sx={{minWidth: 36}}>
                 <AddchartIcon sx={{color: 'white'}} />
               </ListItemIcon>
               <ListItemText primary="Chart Builder" />
+            </ListItemButton>
+          </Link>
+
+          <Link href="/report">
+            <ListItemButton sx={{padding: 1}} selected={currentRoute === '/report'}>
+              <ListItemIcon sx={{minWidth: 36}}>
+                <DescriptionIcon sx={{color: 'white'}} />
+              </ListItemIcon>
+              <ListItemText primary="Report" />
             </ListItemButton>
           </Link>
 

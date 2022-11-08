@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   padding: 0 1em;
-  height: 98%;
+  height: 100vh;
+  overflow: auto;
 }
 
 .settings_section_header_login_warning {
@@ -56,6 +57,7 @@
 .chart_container {
   position: relative;
   flex-grow: 1;
+  overflow: hidden;
 }
 
 .spinner_container {
