@@ -89,7 +89,7 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
     <>
       <Dialog open={isLoadDialogOpen} onClose={handleLoadClose}>
         <DialogTitle>Load custom chart</DialogTitle>
-        <DialogContent sx={{height: "50vh"}}>
+        <DialogContent sx={{height: "50vh", paddingBottom: '50px'}}>
           <div className={styles.load_dialog_section}>
             <div className={styles.load_dialog_group}>
               <h3>Public charts</h3>
@@ -105,6 +105,7 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
                   onChange={(event, newChart) => {
                     setSelectedChart(newChart);
                   }}
+                  sx={{height: "100%", overflowY: "auto"}}
                 >
                   {publicCharts.map((chart, index) => (
                     <ToggleButton
@@ -135,6 +136,7 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
                   onChange={(event, newChart) => {
                     setSelectedChart(newChart);
                   }}
+                  sx={{height: "100%", overflowY: "auto"}}
                 >
                   {personalCharts.map((chart, index) => (
                     <ToggleButton
@@ -165,7 +167,7 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleLoadClose}>Cancel</Button>
-          <Button onClick={e => handleLoadChart(selectedChart)}>Load</Button>
+          <Button onClick={e => selectedChart && handleLoadChart(selectedChart)}>Load</Button>
         </DialogActions>
       </Dialog>
 

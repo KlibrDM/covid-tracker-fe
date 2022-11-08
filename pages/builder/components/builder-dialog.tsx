@@ -85,7 +85,7 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
           } label="Calculate 14 day average" labelPlacement="end" />
         </FormGroup>
 
-        <FormControl variant="standard" fullWidth>
+        <FormControl variant="standard" fullWidth sx={{marginTop: '8px'}}>
           <InputLabel shrink={true} htmlFor="location">Location</InputLabel>
           <Select
             native
@@ -102,7 +102,7 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
           </Select>
         </FormControl>
 
-        <FormControl variant="standard" fullWidth>
+        <FormControl variant="standard" fullWidth sx={{marginTop: '12px'}}>
           <InputLabel shrink={true} htmlFor="chart-type">Chart Type</InputLabel>
           <Select
             native
