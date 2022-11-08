@@ -11,7 +11,7 @@ import { ILocation } from '../../models/location';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { CircularProgress, FormControlLabel, FormGroup, Switch } from '@mui/material';
+import { Alert, CircularProgress, FormControlLabel, FormGroup, Snackbar, Switch } from '@mui/material';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import AddIcon from '@mui/icons-material/Add';
@@ -65,6 +65,10 @@ const Builder: NextPage = (props: any) => {
   const [isLoadDialogOpen, setIsLoadDialogOpen] = useState<boolean>(false);
   const [newChartLoaded, setNewChartLoaded] = useState<boolean>(false);
   const loadDialogRef = useRef(null);
+
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "info" | "warning" | "error">("success");
 
   const [isSaved, setIsSaved] = useState<boolean>(false);
 
@@ -136,7 +140,7 @@ const Builder: NextPage = (props: any) => {
 
     for(let i = 0; i < chipData.length; i++){
       const e = chipData[i];
-      const data: IData[] = await getData(e.location_code, e.indicator.key, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'))
+      const data: IData[] = await getData(e.location_code, e.indicator.key, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
       const dataset: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]> = {
         type: e.chart_type === 'area' ? 'line' : e.chart_type,
         label: e.location_code + ' - ' + e.indicator.label,
@@ -216,15 +220,24 @@ const Builder: NextPage = (props: any) => {
     try {
       const response = await saveCustomChart(payload, user.token);
       if(response.message){
-        console.log(response.message);
+        setSnackbarSeverity('error');
+        setSnackbarMessage(response.message);
+        setSnackbarOpen(true);
       }
       else{
         setIsSaved(true);
         setLoadedChartId(response._id);
         setLoadedChartOwner(response.ownerId);
+
+        //Snackbar
+        setSnackbarSeverity('success');
+        setSnackbarMessage('Chart saved successfully');
+        setSnackbarOpen(true);
       }
     } catch (err) {
-      console.log(err);
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error saving chart');
+      setSnackbarOpen(true);
     }
   };
 
@@ -241,13 +254,22 @@ const Builder: NextPage = (props: any) => {
     try {
       const response = await updateCustomChart(payload, loadedChartId!, user.token);
       if(response.message){
-        console.log(response.message);
+        setSnackbarSeverity('error');
+        setSnackbarMessage(response.message);
+        setSnackbarOpen(true);
       }
       else{
         setIsSaved(true);
+
+        //Snackbar
+        setSnackbarSeverity('success');
+        setSnackbarMessage('Chart updated successfully');
+        setSnackbarOpen(true);
       }
     } catch (err) {
-      console.log(err);
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error updating chart');
+      setSnackbarOpen(true);
     }
   };
 
@@ -457,6 +479,16 @@ const Builder: NextPage = (props: any) => {
         handleLoadChart={handleLoadChart}
         isLoadDialogOpen={isLoadDialogOpen}
       />
+
+      <Snackbar
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        autoHideDuration={5000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <Alert severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Layout>
   )
 }
