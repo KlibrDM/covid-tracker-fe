@@ -4,7 +4,9 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
+import { ButtonProps } from '@mui/material/Button';
+import MenuItem from '@mui/material/MenuItem';
 import { IData } from '../../../models/data';
 import { getData } from '../../../lib/get-data';
 import moment from 'moment';
@@ -29,6 +31,7 @@ const LocationsTab = (props: any) => {
 
   const [isDataDialogOpen, setIsDataDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<ILocation>();
+  const [rawData, setRawData] = useState<IData[]>();
   const [displayData, setDisplayData] = useState<{columns: GridColDef[], rows: any[]}>({columns: [], rows: []});
   const [isDataReady, setIsDataReady] = useState(false);
 
@@ -46,6 +49,8 @@ const LocationsTab = (props: any) => {
   useEffect(() => {
     if(selectedLocation) {
       getData(selectedLocation.code).then((data: IData[]) => {
+        setRawData(data);
+
         //Empty data if there is nothing and return
         if(!data.length){
           setDisplayData({columns: [], rows: []});
@@ -90,18 +95,70 @@ const LocationsTab = (props: any) => {
     return keys;
   }
 
+  const exportBlob = (blob: Blob, filename: string) => {
+    // Save the blob in a json file
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    });
+  };
+
+  const JsonExportMenuItem = (props: GridExportMenuItemProps<{}>) => {
+    const { hideMenu } = props;
+
+    return (
+      <MenuItem
+        onClick={() => {
+          const blob = new Blob([JSON.stringify(rawData, null, 2)], {
+            type: 'text/json',
+          });
+          exportBlob(blob, 'data.json');
+
+          // Hide the export menu after the export
+          hideMenu?.();
+        }}
+      >
+        Export JSON
+      </MenuItem>
+    );
+  };
+
+  const csvOptions: GridCsvExportOptions = { delimiter: ',' };
+
+  const CustomExportButton = (props: ButtonProps) => (
+    <GridToolbarExportContainer {...props}>
+      <GridCsvExportMenuItem options={csvOptions} />
+      <JsonExportMenuItem />
+    </GridToolbarExportContainer>
+  );
+
+  const CustomToolbar = (props: GridToolbarContainerProps) => (
+    <GridToolbarContainer {...props}>
+      <GridToolbarColumnsButton />
+      <GridToolbarFilterButton />
+      <GridToolbarDensitySelector />
+      <CustomExportButton />
+    </GridToolbarContainer>
+  );
+
   return (
     <>
       <div className={styles.locations_tab_container}>
         {
           Array.from(displayLocations.keys()).map((continent, index) => (
-            <>
-              <h3 key={index}>{continent}</h3>
+            <div key={index}>
+              <h3>{continent}</h3>
               <div className={styles.locations_group}>
               {
                 displayLocations.get(continent)?.map((location, index) => (
                   <Card
-                    key={index}
+                    key={location.code}
                     className={styles.locations_card}
                     onClick={() => handleDataDialogOpen(location)}
                   >
@@ -113,7 +170,7 @@ const LocationsTab = (props: any) => {
                 ))
               }
               </div>
-            </>
+            </div>
           ))
         }
       </div>
@@ -128,6 +185,10 @@ const LocationsTab = (props: any) => {
                 ? <DataGrid
                     rows={displayData.rows}
                     columns={displayData.columns}
+                    rowHeight={35}
+                    headerHeight={45}
+                    rowsPerPageOptions={[10, 25, 50, 100]}
+                    components={{ Toolbar: CustomToolbar }}
                   />
                 : <div className={styles.spinner_container}>
                     <CircularProgress />

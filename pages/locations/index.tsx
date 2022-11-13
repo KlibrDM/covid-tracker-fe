@@ -8,8 +8,6 @@ import { ILocation } from '../../models/location';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import LocationsTab from './components/locations-tab';
 
 interface TabPanelProps {
