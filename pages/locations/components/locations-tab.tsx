@@ -47,13 +47,13 @@ const LocationsTab = (props: any) => {
   };
 
   const handleDataDialogOpen = (location: ILocation) => {
-    setIsDataReady(false);
     setSelectedLocation(location);
     setIsDataDialogOpen(true);
   };
 
   //When user clicks on a new location get data
   useEffect(() => {
+    setIsDataReady(false);
     if(selectedLocation) {
       getData(selectedLocation.code).then((data: IData[]) => {
         setRawData(data);
@@ -210,7 +210,7 @@ const LocationsTab = (props: any) => {
                         <TableCell>{selectedLocation.population || 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.population_density || 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.median_age || 'Unknown'}</TableCell>
-                        <TableCell>{selectedLocation.aged_65_older || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.aged_65_older + '%' || 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.hospital_beds_per_thousand || 'Unknown'}</TableCell>
                       </TableRow>
                     </TableBody>
