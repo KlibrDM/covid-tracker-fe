@@ -10,6 +10,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
+import LocationsTab from './components/locations-tab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -51,6 +52,7 @@ const Locations: NextPage = (props: any) => {
 
       <section className={styles.page_container}>
         <h1>Locations</h1>
+        
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
           <Tabs value={tabIndex} onChange={handleTabChange} aria-label="Locations Tab">
             <Tab label="Locations" />
@@ -58,25 +60,9 @@ const Locations: NextPage = (props: any) => {
             <Tab label="Manage Locations" />
           </Tabs>
         </Box>
+
         <TabPanel value={tabIndex} index={0}>
-          <div className={styles.locations_tab_container}>
-            {
-              locations.map((location) => (
-                <Card key={location.code} className={styles.locations_card}>
-                  <CardContent>
-                    <h4>{location.name}</h4>
-                    <p>Type: {location.type !== 'owidcat' ? location.type.slice(0,1).toUpperCase() + location.type.slice(1) : 'Custom'}</p>
-                    {location.continent && <p>Continent: {location.continent}</p>}
-                    {location.population && <p>Population: {location.population}</p>}
-                    {location.population_density && <p>Population density: {location.population_density}</p>}
-                    {location.median_age && <p>Median age: {location.median_age}</p>}
-                    {location.aged_65_older && <p>Citizens aged 65 or older: {location.aged_65_older}</p>}
-                    {location.hospital_beds_per_thousand && <p>Hospital beds/1k: {location.hospital_beds_per_thousand}</p>}
-                  </CardContent>
-                </Card>
-              ))
-            }
-          </div>
+          <LocationsTab location={location} locations={locations} />
         </TabPanel>
         <TabPanel value={tabIndex} index={1}>
 
