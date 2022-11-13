@@ -9,6 +9,13 @@ import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { IData } from '../../../models/data';
 import { getData } from '../../../lib/get-data';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 import moment from 'moment';
 
 const LocationsTab = (props: any) => {
@@ -63,12 +70,17 @@ const LocationsTab = (props: any) => {
 
         //Add columns
         extractKeysFromData(data).forEach((key: string) => {
-          columns.push({field: key, headerName: key, width: key === 'date' ? 200 : key.length * 6.5 + 40});
+          columns.push({
+            field: key,
+            headerName: key,
+            type: key === 'date' ? 'date' : 'number',
+            width: key === 'date' ? 100 : key.length * 6.5 + 40
+          });
         });
 
         //Add rows
         data.forEach((data: IData, index: number) => {
-          const row: any = {id: index, date: moment(data.date).format('YYYY-MM-DD, dddd')};
+          const row: any = {id: index, date: moment(data.date).format('YYYY-MM-DD')};
           Object.keys(data).forEach((key: string) => {
             if(key !== "date" && key !== "__v" && key !== "_id" && key !== "location_code") {
               row[key] = data[key as keyof IData];
@@ -162,7 +174,7 @@ const LocationsTab = (props: any) => {
                     className={styles.locations_card}
                     onClick={() => handleDataDialogOpen(location)}
                   >
-                    <CardContent>
+                    <CardContent className={styles.location_card_content}>
                       <h4>{location.name}</h4>
                       {location.population && <p>Population: {location.population}</p>}
                     </CardContent>
@@ -179,7 +191,36 @@ const LocationsTab = (props: any) => {
         {selectedLocation &&
           <>
             <DialogTitle>Data for {selectedLocation.name}</DialogTitle>
-            <DialogContent sx={{height: "80vh", paddingBottom: 0}}>
+            <DialogContent sx={{height: "80vh", paddingBottom: 0, display: 'flex', flexDirection: 'column', gap: '1em'}}>
+            <div className={styles.details_table_container}>
+                {isDataReady
+                ? <TableContainer component={Paper} variant="outlined">
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Population</TableCell>
+                        <TableCell>Pop. Density</TableCell>
+                        <TableCell>Median Age</TableCell>
+                        <TableCell>Aged 65+</TableCell>
+                        <TableCell>Hosp. Beds per 1K</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow sx={{ border: 0 }}>
+                        <TableCell>{selectedLocation.population || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.population_density || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.median_age || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.aged_65_older || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.hospital_beds_per_thousand || 'Unknown'}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                : <div className={styles.spinner_container}>
+                    <CircularProgress />
+                  </div>
+                }
+              </div>
               <div className={styles.table_container}>
                 {isDataReady
                 ? <DataGrid
