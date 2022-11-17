@@ -9,6 +9,7 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import LocationsTab from './components/locations-tab';
+import CustomLocationsTab from './components/custom-locations-tab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -55,7 +56,7 @@ const Locations: NextPage = (props: any) => {
           <Tabs value={tabIndex} onChange={handleTabChange} aria-label="Locations Tab">
             <Tab label="Locations" />
             <Tab label="Custom Locations" />
-            <Tab label="Manage Locations" />
+            <Tab label="Your Locations" />
           </Tabs>
         </Box>
 
@@ -63,7 +64,7 @@ const Locations: NextPage = (props: any) => {
           <LocationsTab location={location} locations={locations} />
         </TabPanel>
         <TabPanel value={tabIndex} index={1}>
-
+          <CustomLocationsTab />
         </TabPanel>
         <TabPanel value={tabIndex} index={2}>
 

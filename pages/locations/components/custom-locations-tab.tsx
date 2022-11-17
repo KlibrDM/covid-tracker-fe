@@ -1,5 +1,4 @@
 import styles from '../../../styles/Locations.module.css'
-import { ILocation } from '../../../models/location';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
@@ -17,27 +16,15 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import moment from 'moment';
+import { ICustomLocation } from '../../../models/custom-location';
+import { getCustomLocations } from '../../../lib/get-custom-locations';
 
-const LocationsTab = (props: any) => {
-  const location = props.location as string;
-  const locations = props.locations as ILocation[];
-  const locationName = locations.find(e => e.code === location)?.name;
-
-  const continents: Set<string> = new Set();
-  const displayLocations: Map<string, ILocation[]> = new Map();
-
-  // Search for continents and add them
-  locations.forEach(e => continents.add(e.continent ? e.continent : "Other"));
-  // Sort continents
-  const continentSortingOrder = ["Europe", "North America", "South America", "Asia", "Africa", "Oceania", "Other"];
-  const sortedContinents = Array.from(continents).sort((a, b) => continentSortingOrder.indexOf(a) - continentSortingOrder.indexOf(b));
-  // Add locations to continents
-  sortedContinents.forEach(e => displayLocations.set(e, locations.filter(l => l.continent === e || (!l.continent && e === "Other"))));
-  // Sort countries in each continent
-  displayLocations.forEach((value, key) => displayLocations.set(key, value.sort((a, b) => a.name.localeCompare(b.name))));
+const CustomLocationsTab = (props: any) => {
+  const [locations, setLocations] = useState<ICustomLocation[]>([]);
+  const [locationsLoaded, setLocationsLoaded] = useState(false);
 
   const [isDataDialogOpen, setIsDataDialogOpen] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<ILocation>();
+  const [selectedLocation, setSelectedLocation] = useState<ICustomLocation>();
   const [rawData, setRawData] = useState<IData[]>();
   const [displayData, setDisplayData] = useState<{columns: GridColDef[], rows: any[]}>({columns: [], rows: []});
   const [isDataReady, setIsDataReady] = useState(false);
@@ -46,16 +33,32 @@ const LocationsTab = (props: any) => {
     setIsDataDialogOpen(false);
   };
 
-  const handleDataDialogOpen = (location: ILocation) => {
+  const handleDataDialogOpen = (location: ICustomLocation) => {
     setSelectedLocation(location);
     setIsDataDialogOpen(true);
   };
+
+  //Load locations
+  useEffect(() => {
+    const loadLocations = async () => {
+      const locations = await getCustomLocations();
+      setLocations(locations);
+      setLocationsLoaded(true);
+    };
+    loadLocations();
+  }, []);
 
   //When user clicks on a new location get data
   useEffect(() => {
     setIsDataReady(false);
     if(selectedLocation) {
-      getData(selectedLocation.code).then((data: IData[]) => {
+      getData(
+        selectedLocation.code,
+        undefined,
+        undefined,
+        undefined,
+        true
+      ).then((data: IData[]) => {
         setRawData(data);
 
         //Empty data if there is nothing and return
@@ -162,29 +165,23 @@ const LocationsTab = (props: any) => {
   return (
     <>
       <div className={styles.locations_tab_container}>
+        <h3>Public Custom Locations</h3>
+        <div className={styles.locations_group}>
         {
-          Array.from(displayLocations.keys()).map((continent, index) => (
-            <div key={index}>
-              <h3>{continent}</h3>
-              <div className={styles.locations_group}>
-              {
-                displayLocations.get(continent)?.map((location, index) => (
-                  <Card
-                    key={location.code}
-                    className={styles.locations_card}
-                    onClick={() => handleDataDialogOpen(location)}
-                  >
-                    <CardContent className={styles.location_card_content}>
-                      <h4>{location.name}</h4>
-                      {location.population && <p>Population: {location.population}</p>}
-                    </CardContent>
-                  </Card>
-                ))
-              }
-              </div>
-            </div>
+          locations.map((location, index) => (
+            <Card
+              key={location.code}
+              className={styles.locations_card}
+              onClick={() => handleDataDialogOpen(location)}
+            >
+              <CardContent className={styles.location_card_content}>
+                <h4>{location.name}</h4>
+                {location.population && <p>Population: {location.population}</p>}
+              </CardContent>
+            </Card>
           ))
         }
+        </div>
       </div>
 
       <Dialog open={isDataDialogOpen} onClose={handleDataDialogClose} fullWidth maxWidth="lg">
@@ -247,4 +244,4 @@ const LocationsTab = (props: any) => {
   )
 }
 
-export default LocationsTab
+export default CustomLocationsTab
