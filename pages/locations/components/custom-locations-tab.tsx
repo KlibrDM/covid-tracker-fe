@@ -2,7 +2,7 @@ import styles from '../../../styles/Locations.module.css'
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -165,23 +165,32 @@ const CustomLocationsTab = (props: any) => {
   return (
     <>
       <div className={styles.locations_tab_container}>
-        <h3>Public Custom Locations</h3>
-        <div className={styles.locations_group}>
-        {
-          locations.map((location, index) => (
-            <Card
-              key={location.code}
-              className={styles.locations_card}
-              onClick={() => handleDataDialogOpen(location)}
-            >
-              <CardContent className={styles.location_card_content}>
-                <h4>{location.name}</h4>
-                {location.population && <p>Population: {location.population}</p>}
-              </CardContent>
-            </Card>
-          ))
+        {locationsLoaded ?
+          locations.length ?
+            <>
+              <h3>Public Custom Locations</h3>
+              <div className={styles.locations_group}>
+              {
+                locations.map((location, index) => (
+                  <Card
+                    key={location.code}
+                    className={styles.locations_card}
+                    onClick={() => handleDataDialogOpen(location)}
+                  >
+                    <CardContent className={styles.location_card_content}>
+                      <h4>{location.name}</h4>
+                      {location.population && <p>Population: {location.population}</p>}
+                    </CardContent>
+                  </Card>
+                ))
+              }
+              </div>
+            </>
+          : <Alert severity="error">No public locations found!</Alert>
+          : <div className={styles.spinner_container}>
+              <CircularProgress />
+            </div>
         }
-        </div>
       </div>
 
       <Dialog open={isDataDialogOpen} onClose={handleDataDialogClose} fullWidth maxWidth="lg">
