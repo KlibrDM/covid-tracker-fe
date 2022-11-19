@@ -10,6 +10,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import LocationsTab from './components/locations-tab';
 import CustomLocationsTab from './components/custom-locations-tab';
+import YourLocationsTab from './components/your-locations-tab';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -32,6 +33,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Locations: NextPage = (props: any) => {
+  const user = props.user;
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
   const locationName = locations.find(e => e.code === location)?.name;
@@ -56,7 +58,7 @@ const Locations: NextPage = (props: any) => {
           <Tabs value={tabIndex} onChange={handleTabChange} aria-label="Locations Tab">
             <Tab label="Locations" />
             <Tab label="Custom Locations" />
-            <Tab label="Your Locations" />
+            <Tab label="Your Locations" disabled={!user}/>
           </Tabs>
         </Box>
 
@@ -67,7 +69,7 @@ const Locations: NextPage = (props: any) => {
           <CustomLocationsTab />
         </TabPanel>
         <TabPanel value={tabIndex} index={2}>
-
+          <YourLocationsTab user={user}/>
         </TabPanel>
       </section>
     </Layout>
@@ -77,10 +79,12 @@ const Locations: NextPage = (props: any) => {
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
 
   return { props: {
     location: location,
     locations: locations,
+    user: user,
   } };
 }
 

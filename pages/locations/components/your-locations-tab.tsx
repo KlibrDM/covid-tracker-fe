@@ -2,7 +2,7 @@ import styles from '../../../styles/Locations.module.css'
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, FormControlLabel, FormGroup, Switch, Snackbar } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,9 +17,13 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import moment from 'moment';
 import { ICustomLocation } from '../../../models/custom-location';
-import { getCustomLocationsPublic } from '../../../lib/get-custom-locations-public';
+import { getCustomLocationsPersonal } from '../../../lib/get-custom-locations-personal';
+import TextField from '@mui/material/TextField';
+import SaveIcon from '@mui/icons-material/Save';
+import { saveCustomLocation } from '../../../lib/save-custom-location';
 
-const CustomLocationsTab = (props: any) => {
+const YourLocationsTab = (props: any) => {
+  const user = props.user || {};
   const [locations, setLocations] = useState<ICustomLocation[]>([]);
   const [locationsLoaded, setLocationsLoaded] = useState(false);
 
@@ -28,6 +32,22 @@ const CustomLocationsTab = (props: any) => {
   const [rawData, setRawData] = useState<IData[]>();
   const [displayData, setDisplayData] = useState<{columns: GridColDef[], rows: any[]}>({columns: [], rows: []});
   const [isDataReady, setIsDataReady] = useState(false);
+
+  //Form state
+  const [newCode, setNewCode] = useState<string>();
+  const [newName, setNewName] = useState<string>();
+  const [newPopulation, setNewPopulation] = useState<number>();
+  const [newPopulationDensity, setNewPopulationDensity] = useState<number>();
+  const [newMedianAge, setNewMedianAge] = useState<number>();
+  const [newAged65Older, setNewAged65Older] = useState<number>();
+  const [newHospitalBedsPerThousand, setNewHospitalBedsPerThousand] = useState<number>();
+  const [newIsPublic, setNewIsPublic] = useState(false);
+  const [isSaved, setIsSaved] = useState<boolean>(false);
+
+  //Snackbar
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "info" | "warning" | "error">("success");
 
   const handleDataDialogClose = () => {
     setIsDataDialogOpen(false);
@@ -38,15 +58,66 @@ const CustomLocationsTab = (props: any) => {
     setIsDataDialogOpen(true);
   };
 
+  const handleSave = async () => {
+    const payload: ICustomLocation = {
+      ownerId: user._id,
+      is_public: newIsPublic,
+      code: newCode || '',
+      name: newName || '',
+      population: newPopulation,
+      population_density: newPopulationDensity,
+      median_age: newMedianAge,
+      aged_65_older: newAged65Older,
+      hospital_beds_per_thousand: newHospitalBedsPerThousand
+    };
+
+    try {
+      const response = await saveCustomLocation(payload, user.token);
+      if(typeof response === 'number'){
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Error encountered! Code: ' + response);
+        setSnackbarOpen(true);
+      }
+      else if(response.message){
+        setSnackbarSeverity('error');
+        setSnackbarMessage(response.message);
+        setSnackbarOpen(true);
+      }
+      else{
+        setIsSaved(true);
+
+        //Snackbar
+        setSnackbarSeverity('success');
+        setSnackbarMessage('Location saved successfully');
+        setSnackbarOpen(true);
+      }
+    } catch (err) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error saving location');
+      setSnackbarOpen(true);
+    }
+  };
+
   //Load locations
   useEffect(() => {
     const loadLocations = async () => {
-      const locations = await getCustomLocationsPublic();
+      const locations = await getCustomLocationsPersonal(user.token);
       setLocations(locations);
       setLocationsLoaded(true);
     };
     loadLocations();
   }, []);
+
+  //Reload locations if changed
+  useEffect(() => {
+    if(isSaved){
+      const loadLocations = async () => {
+        const locations = await getCustomLocationsPersonal(user.token);
+        setLocations(locations);
+      };
+      loadLocations();
+    }
+  }, [isSaved]);
 
   //When user clicks on a new location get data
   useEffect(() => {
@@ -164,33 +235,139 @@ const CustomLocationsTab = (props: any) => {
 
   return (
     <>
-      <div className={styles.locations_tab_container}>
-        {locationsLoaded ?
-          locations.length ?
-            <>
-              <h3>Public Custom Locations</h3>
-              <div className={styles.locations_group}>
-              {
-                locations.map((location, index) => (
-                  <Card
-                    key={location.code}
-                    className={styles.locations_card}
-                    onClick={() => handleDataDialogOpen(location)}
-                  >
-                    <CardContent className={styles.location_card_content}>
-                      <h4>{location.name}</h4>
-                      {location.population && <p>Population: {location.population}</p>}
-                    </CardContent>
-                  </Card>
-                ))
-              }
+      <div className={styles.your_locations_tab}>
+        <div className={styles.new_location_panel}>
+          <h3>Create new location</h3>
+          <TextField
+            fullWidth
+            label="Short code"
+            variant="standard"
+            size='small'
+            inputProps={{ maxLength: 8 }}
+            value={newCode || ''}
+            onChange={(e) => {
+              setNewCode(e.target.value);
+              setIsSaved(false);
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Name"
+            variant="standard"
+            size='small'
+            inputProps={{ maxLength: 120 }}
+            value={newName || ''}
+            onChange={(e) => {
+              setNewName(e.target.value);
+              setIsSaved(false);
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Population"
+            variant="standard"
+            type="number"
+            size='small'
+            value={newPopulation || ''}
+            onChange={(e) => {
+              setNewPopulation(Number(e.target.value));
+              setIsSaved(false);
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Population density"
+            variant="standard"
+            type="number"
+            size='small'
+            value={newPopulationDensity || ''}
+            onChange={(e) => {
+              setNewPopulationDensity(Number(e.target.value));
+              setIsSaved(false);
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Median age"
+            variant="standard"
+            type="number"
+            size='small'
+            value={newMedianAge || ''}
+            onChange={(e) => {
+              setNewMedianAge(Number(e.target.value));
+              setIsSaved(false);
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Aged 65 or older (%)"
+            variant="standard"
+            type="number"
+            size='small'
+            value={newAged65Older || ''}
+            onChange={(e) => {
+              setNewAged65Older(Number(e.target.value));
+              setIsSaved(false);
+            }}
+          />
+          <TextField
+            fullWidth
+            label="Hospital beds/1k"
+            variant="standard"
+            type="number"
+            size='small'
+            value={newHospitalBedsPerThousand || ''}
+            onChange={(e) => {
+              setNewHospitalBedsPerThousand(Number(e.target.value));
+              setIsSaved(false);
+            }}
+          />
+          <FormGroup sx={{alignItems: 'flex-start'}}>
+            <FormControlLabel sx={{marginLeft: 0}} control={
+              <Switch checked={newIsPublic} onChange={(e) => {
+                setNewIsPublic(e.target.checked);
+                setIsSaved(false);
+              }} />
+            } label="Public" labelPlacement="start" />
+          </FormGroup>
+          <Button
+            variant="outlined"
+            color='success'
+            endIcon={<SaveIcon />}
+            onClick={handleSave}
+            disabled={isSaved || newCode === '' || newName === '' || !user}
+          >
+            Save
+          </Button>
+        </div>
+        <div className={styles.your_locations_container}>
+          {locationsLoaded ?
+            locations.length ?
+              <>
+                <h3>Personal Custom Locations</h3>
+                <div className={styles.locations_group}>
+                {
+                  locations.map((location, index) => (
+                    <Card
+                      key={location.code}
+                      className={styles.locations_card}
+                      onClick={() => handleDataDialogOpen(location)}
+                    >
+                      <CardContent className={styles.location_card_content}>
+                        <h4>{location.name}</h4>
+                        {location.population && <p>Population: {location.population}</p>}
+                      </CardContent>
+                    </Card>
+                  ))
+                }
+                </div>
+              </>
+            : <Alert severity="error">No public locations found!</Alert>
+            : <div className={styles.spinner_container}>
+                <CircularProgress />
               </div>
-            </>
-          : <Alert severity="error">No public locations found!</Alert>
-          : <div className={styles.spinner_container}>
-              <CircularProgress />
-            </div>
-        }
+          }
+        </div>
       </div>
 
       <Dialog open={isDataDialogOpen} onClose={handleDataDialogClose} fullWidth maxWidth="lg">
@@ -249,8 +426,18 @@ const CustomLocationsTab = (props: any) => {
           <Button onClick={handleDataDialogClose}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        autoHideDuration={5000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+        <Alert severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   )
 }
 
-export default CustomLocationsTab
+export default YourLocationsTab

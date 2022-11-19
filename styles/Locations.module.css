@@ -32,6 +32,20 @@
   flex-grow: 1;
 }
 
+.your_locations_tab {
+  display: flex;
+  gap: 30px;
+  justify-content: space-between;
+}
+
+.new_location_panel {
+  flex-basis: 50%;
+}
+
+.your_locations_container {
+  flex-basis: 50%;
+}
+
 .spinner_container {
   display: flex;
   justify-content: center;
