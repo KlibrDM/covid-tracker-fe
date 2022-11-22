@@ -20,7 +20,11 @@ import { ICustomLocation } from '../../../models/custom-location';
 import { getCustomLocationsPersonal } from '../../../lib/get-custom-locations-personal';
 import TextField from '@mui/material/TextField';
 import SaveIcon from '@mui/icons-material/Save';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from '@mui/material/IconButton';
 import { saveCustomLocation } from '../../../lib/save-custom-location';
+import { deleteCustomLocation } from '../../../lib/delete-custom-location';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};
@@ -32,6 +36,8 @@ const YourLocationsTab = (props: any) => {
   const [rawData, setRawData] = useState<IData[]>();
   const [displayData, setDisplayData] = useState<{columns: GridColDef[], rows: any[]}>({columns: [], rows: []});
   const [isDataReady, setIsDataReady] = useState(false);
+
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   //Form state
   const [newCode, setNewCode] = useState<string>();
@@ -57,6 +63,37 @@ const YourLocationsTab = (props: any) => {
     setSelectedLocation(location);
     setIsDataDialogOpen(true);
   };
+
+  const handleEditDialogOpen = (location: ICustomLocation) => {
+    setSelectedLocation(location);
+    //TODO: Create edit dialog
+    setIsEditDialogOpen(true);
+    setIsDataDialogOpen(true);
+  };
+
+  const handleDelete = async (location: ICustomLocation) => {
+    const newLocations = locations.filter(l => l.code !== location.code);
+    setLocations(newLocations);
+    try {
+      const response = await deleteCustomLocation(location.code, user.token);
+
+      if(response.message === "Location deleted"){
+        setSnackbarSeverity('warning');
+        setSnackbarMessage(response.message);
+        setSnackbarOpen(true);
+      }
+      else{
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Error deleting location. Error Code: ' + response.status);
+        setSnackbarOpen(true);
+      }
+    }
+    catch (err) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error deleting location');
+      setSnackbarOpen(true);
+    }
+  }
 
   const handleSave = async () => {
     const payload: ICustomLocation = {
@@ -357,6 +394,27 @@ const YourLocationsTab = (props: any) => {
                         <h4>{location.name}</h4>
                         {location.population && <p>Population: {location.population}</p>}
                       </CardContent>
+                      <div className={styles.location_card_action_buttons}>
+                        <IconButton
+                          size='small'
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleEditDialogOpen(location);
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                          size='small'
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleDelete(location);
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </div>
                     </Card>
                   ))
                 }

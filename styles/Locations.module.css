@@ -46,6 +46,20 @@
   flex-basis: 50%;
 }
 
+.locations_card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.location_card_action_buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  margin: 4px;
+  height: 100%;
+}
+
 .spinner_container {
   display: flex;
   justify-content: center;
