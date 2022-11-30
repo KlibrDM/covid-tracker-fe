@@ -2,7 +2,7 @@ import styles from '../../../styles/Locations.module.css'
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, FormControlLabel, FormGroup, Switch, Snackbar } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, FormControlLabel, FormGroup, Switch, Snackbar, DialogContentText } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -25,6 +25,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import { saveCustomLocation } from '../../../lib/save-custom-location';
 import { deleteCustomLocation } from '../../../lib/delete-custom-location';
+import YourLocationsAddData from './your-locations-add-data';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};
@@ -64,12 +65,18 @@ const YourLocationsTab = (props: any) => {
     setIsDataDialogOpen(true);
   };
 
+  const handleEditDialogClose = () => {
+    setIsEditDialogOpen(false);
+  };
+
   const handleEditDialogOpen = (location: ICustomLocation) => {
     setSelectedLocation(location);
-    //TODO: Create edit dialog
     setIsEditDialogOpen(true);
-    setIsDataDialogOpen(true);
   };
+
+  const refreshData = () => {
+    getTableData();
+  }
 
   const handleDelete = async (location: ICustomLocation) => {
     const newLocations = locations.filter(l => l.code !== location.code);
@@ -158,6 +165,10 @@ const YourLocationsTab = (props: any) => {
 
   //When user clicks on a new location get data
   useEffect(() => {
+    getTableData();
+  }, [selectedLocation]);
+
+  const getTableData = () => {
     setIsDataReady(false);
     if(selectedLocation) {
       getData(
@@ -183,6 +194,7 @@ const YourLocationsTab = (props: any) => {
         extractKeysFromData(data).forEach((key: string) => {
           columns.push({
             field: key,
+            editable: true,
             headerName: key,
             type: key === 'date' ? 'date' : 'number',
             width: key === 'date' ? 100 : key.length * 6.5 + 40
@@ -204,7 +216,7 @@ const YourLocationsTab = (props: any) => {
         setIsDataReady(true);
       });
     }
-  }, [selectedLocation]);
+  }
 
   const extractKeysFromData = (data: IData[]) => {
     const keys: Set<string> = new Set();
@@ -428,12 +440,13 @@ const YourLocationsTab = (props: any) => {
         </div>
       </div>
 
+      {/* DATA VIEW DIALOG */}
       <Dialog open={isDataDialogOpen} onClose={handleDataDialogClose} fullWidth maxWidth="lg">
         {selectedLocation &&
           <>
             <DialogTitle>Data for {selectedLocation.name}</DialogTitle>
             <DialogContent sx={{height: "80vh", paddingBottom: 0, display: 'flex', flexDirection: 'column', gap: '1em'}}>
-            <div className={styles.details_table_container}>
+              <div className={styles.details_table_container}>
                 {isDataReady
                 ? <TableContainer component={Paper} variant="outlined">
                   <Table size="small">
@@ -482,6 +495,71 @@ const YourLocationsTab = (props: any) => {
         }
         <DialogActions>
           <Button onClick={handleDataDialogClose}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* DATA EDIT DIALOG */}
+      <Dialog open={isEditDialogOpen} onClose={handleEditDialogClose} fullWidth maxWidth="lg">
+        {selectedLocation &&
+          <>
+            <DialogTitle>Editing data for {selectedLocation.name}</DialogTitle>
+            <DialogContent sx={{height: "80vh", paddingBottom: 0, display: 'flex', flexDirection: 'column', gap: '1em'}}>
+              <DialogContentText>
+                Click on the data you want to edit.
+              </DialogContentText>
+              <div className={styles.details_table_container}>
+                {isDataReady
+                ? <TableContainer component={Paper} variant="outlined">
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Population</TableCell>
+                        <TableCell>Pop. Density</TableCell>
+                        <TableCell>Median Age</TableCell>
+                        <TableCell>Aged 65+</TableCell>
+                        <TableCell>Hosp. Beds per 1K</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      <TableRow sx={{ border: 0 }}>
+                        <TableCell>{selectedLocation.population || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.population_density || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.median_age || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.aged_65_older ? selectedLocation.aged_65_older + '%' : 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.hospital_beds_per_thousand || 'Unknown'}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+                : <div className={styles.spinner_container}>
+                    <CircularProgress />
+                  </div>
+                }
+              </div>
+              <div className={styles.table_container}>
+                {isDataReady
+                ? <DataGrid
+                    rows={displayData.rows}
+                    columns={displayData.columns}
+                    rowHeight={35}
+                    headerHeight={45}
+                    rowsPerPageOptions={[10, 25, 50, 100]}
+                    components={{ Toolbar: CustomToolbar }}
+                    experimentalFeatures={{ newEditingApi: true }}
+                  />
+                : <div className={styles.spinner_container}>
+                    <CircularProgress />
+                  </div>
+                }
+              </div>
+              <div className={styles.table_add_section}>
+                <YourLocationsAddData location={selectedLocation.code} user={user} refreshData={refreshData} />
+              </div>
+            </DialogContent>
+          </>
+        }
+        <DialogActions>
+          <Button onClick={handleEditDialogClose}>Close</Button>
         </DialogActions>
       </Dialog>
 

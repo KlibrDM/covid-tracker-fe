@@ -198,7 +198,7 @@ const CustomLocationsTab = (props: any) => {
           <>
             <DialogTitle>Data for {selectedLocation.name}</DialogTitle>
             <DialogContent sx={{height: "80vh", paddingBottom: 0, display: 'flex', flexDirection: 'column', gap: '1em'}}>
-            <div className={styles.details_table_container}>
+              <div className={styles.details_table_container}>
                 {isDataReady
                 ? <TableContainer component={Paper} variant="outlined">
                   <Table size="small">
