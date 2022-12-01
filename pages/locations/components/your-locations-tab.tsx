@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, FormControlLabel, FormGroup, Switch, Snackbar, DialogContentText } from '@mui/material';
-import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector, GridRowModel } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { IData } from '../../../models/data';
@@ -26,6 +26,7 @@ import IconButton from '@mui/material/IconButton';
 import { saveCustomLocation } from '../../../lib/save-custom-location';
 import { deleteCustomLocation } from '../../../lib/delete-custom-location';
 import YourLocationsAddData from './your-locations-add-data';
+import { updateCustomLocationData } from '../../../lib/update-custom-locations-data';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};
@@ -62,6 +63,7 @@ const YourLocationsTab = (props: any) => {
 
   const handleDataDialogOpen = (location: ICustomLocation) => {
     setSelectedLocation(location);
+    getTableData();
     setIsDataDialogOpen(true);
   };
 
@@ -76,7 +78,25 @@ const YourLocationsTab = (props: any) => {
 
   const refreshData = () => {
     getTableData();
-  }
+  };
+
+  const handleRowUpdate = async (newRow: GridRowModel, oldRow: GridRowModel) => {
+    try {
+      const response = await updateCustomLocationData((newRow as IData), user.token, oldRow.date, selectedLocation!.code);
+      return {...response, id: response.date};
+    }
+    catch (err) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Couldn\'t update data');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleRowUpdateError = async (error: Error) => {
+    setSnackbarSeverity('error');
+    setSnackbarMessage('Couldn\'t update data.');
+    setSnackbarOpen(true);
+  };
 
   const handleDelete = async (location: ICustomLocation) => {
     const newLocations = locations.filter(l => l.code !== location.code);
@@ -194,16 +214,16 @@ const YourLocationsTab = (props: any) => {
         extractKeysFromData(data).forEach((key: string) => {
           columns.push({
             field: key,
-            editable: true,
+            editable: key === 'date' ? false : true,
             headerName: key,
             type: key === 'date' ? 'date' : 'number',
-            width: key === 'date' ? 100 : key.length * 6.5 + 40
+            width: key === 'date' ? 110 : key.length * 6.5 + 40
           });
         });
 
         //Add rows
-        data.forEach((data: IData, index: number) => {
-          const row: any = {id: index, date: moment(data.date).format('YYYY-MM-DD')};
+        data.forEach((data: IData) => {
+          const row: any = {id: data.date, date: moment(data.date).format('YYYY-MM-DD')};
           Object.keys(data).forEach((key: string) => {
             if(key !== "date" && key !== "__v" && key !== "_id" && key !== "location_code") {
               row[key] = data[key as keyof IData];
@@ -546,6 +566,8 @@ const YourLocationsTab = (props: any) => {
                     rowsPerPageOptions={[10, 25, 50, 100]}
                     components={{ Toolbar: CustomToolbar }}
                     experimentalFeatures={{ newEditingApi: true }}
+                    processRowUpdate={handleRowUpdate}
+                    onProcessRowUpdateError={handleRowUpdateError}
                   />
                 : <div className={styles.spinner_container}>
                     <CircularProgress />

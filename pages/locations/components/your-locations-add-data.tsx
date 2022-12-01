@@ -6,7 +6,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import { Button, Snackbar, Alert } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { addCustomLocationData } from '../../../lib/add-custom-location-data';
+import { addCustomLocationData } from '../../../lib/add-custom-locations-data';
 
 const YourLocationsAddData = (props: any) => {
   const user = props.user || {};
@@ -28,10 +28,15 @@ const YourLocationsAddData = (props: any) => {
         if(!res.message) {
           refreshData();
         }
+        else{
+          setSnackbarSeverity("error");
+          setSnackbarMessage(res.message);
+          setSnackbarOpen(true);
+        }
       });
     } catch (err) {
       setSnackbarSeverity('error');
-      setSnackbarMessage('Error saving location');
+      setSnackbarMessage('Error saving data');
       setSnackbarOpen(true);
     }
   };

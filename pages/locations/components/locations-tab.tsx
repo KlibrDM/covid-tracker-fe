@@ -74,7 +74,7 @@ const LocationsTab = (props: any) => {
             field: key,
             headerName: key,
             type: key === 'date' ? 'date' : 'number',
-            width: key === 'date' ? 100 : key.length * 6.5 + 40
+            width: key === 'date' ? 110 : key.length * 6.5 + 40
           });
         });
 
