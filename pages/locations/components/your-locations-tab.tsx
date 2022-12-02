@@ -285,6 +285,9 @@ const YourLocationsTab = (props: any) => {
         undefined,
         true
       ).then((data: IData[]) => {
+        //Reverse the response to get the most recent data first
+        data.reverse();
+
         setRawData(data);
 
         //Empty data if there is nothing and return
@@ -401,107 +404,109 @@ const YourLocationsTab = (props: any) => {
       <div className={styles.your_locations_tab}>
         <div className={styles.new_location_panel}>
           <h3>Create new location</h3>
-          <TextField
-            fullWidth
-            label="Short code"
-            variant="standard"
-            size='small'
-            inputProps={{ maxLength: 8 }}
-            value={newCode || ''}
-            onChange={(e) => {
-              setNewCode(e.target.value);
-              setIsSaved(false);
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Name"
-            variant="standard"
-            size='small'
-            inputProps={{ maxLength: 120 }}
-            value={newName || ''}
-            onChange={(e) => {
-              setNewName(e.target.value);
-              setIsSaved(false);
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Population"
-            variant="standard"
-            type="number"
-            size='small'
-            value={newPopulation || ''}
-            onChange={(e) => {
-              setNewPopulation(Number(e.target.value));
-              setIsSaved(false);
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Population density"
-            variant="standard"
-            type="number"
-            size='small'
-            value={newPopulationDensity || ''}
-            onChange={(e) => {
-              setNewPopulationDensity(Number(e.target.value));
-              setIsSaved(false);
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Median age"
-            variant="standard"
-            type="number"
-            size='small'
-            value={newMedianAge || ''}
-            onChange={(e) => {
-              setNewMedianAge(Number(e.target.value));
-              setIsSaved(false);
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Aged 65 or older (%)"
-            variant="standard"
-            type="number"
-            size='small'
-            value={newAged65Older || ''}
-            onChange={(e) => {
-              setNewAged65Older(Number(e.target.value));
-              setIsSaved(false);
-            }}
-          />
-          <TextField
-            fullWidth
-            label="Hospital beds/1k"
-            variant="standard"
-            type="number"
-            size='small'
-            value={newHospitalBedsPerThousand || ''}
-            onChange={(e) => {
-              setNewHospitalBedsPerThousand(Number(e.target.value));
-              setIsSaved(false);
-            }}
-          />
-          <FormGroup sx={{alignItems: 'flex-start'}}>
-            <FormControlLabel sx={{marginLeft: 0}} control={
-              <Switch checked={newIsPublic} onChange={(e) => {
-                setNewIsPublic(e.target.checked);
+          <div className={styles.new_location_form}>
+            <TextField
+              fullWidth
+              label="Short code"
+              variant="standard"
+              size='small'
+              inputProps={{ maxLength: 8 }}
+              value={newCode || ''}
+              onChange={(e) => {
+                setNewCode(e.target.value);
                 setIsSaved(false);
-              }} />
-            } label="Public" labelPlacement="start" />
-          </FormGroup>
-          <Button
-            variant="outlined"
-            color='success'
-            endIcon={<SaveIcon />}
-            onClick={handleSave}
-            disabled={isSaved || newCode === '' || newName === '' || !user}
-          >
-            Save
-          </Button>
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Name"
+              variant="standard"
+              size='small'
+              inputProps={{ maxLength: 120 }}
+              value={newName || ''}
+              onChange={(e) => {
+                setNewName(e.target.value);
+                setIsSaved(false);
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Population"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newPopulation || ''}
+              onChange={(e) => {
+                setNewPopulation(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Population density"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newPopulationDensity || ''}
+              onChange={(e) => {
+                setNewPopulationDensity(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Median age"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newMedianAge || ''}
+              onChange={(e) => {
+                setNewMedianAge(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Aged 65 or older (%)"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newAged65Older || ''}
+              onChange={(e) => {
+                setNewAged65Older(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Hospital beds/1k"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newHospitalBedsPerThousand || ''}
+              onChange={(e) => {
+                setNewHospitalBedsPerThousand(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
+            <FormGroup sx={{alignItems: 'flex-start'}}>
+              <FormControlLabel sx={{marginLeft: 0}} control={
+                <Switch checked={newIsPublic} onChange={(e) => {
+                  setNewIsPublic(e.target.checked);
+                  setIsSaved(false);
+                }} />
+              } label="Public" labelPlacement="start" />
+            </FormGroup>
+            <Button
+              variant="outlined"
+              color='success'
+              endIcon={<SaveIcon />}
+              onClick={handleSave}
+              disabled={isSaved || newCode === '' || newName === '' || !user}
+            >
+              Save
+            </Button>
+          </div>
         </div>
         <div className={styles.your_locations_container}>
           {locationsLoaded ?
@@ -617,9 +622,9 @@ const YourLocationsTab = (props: any) => {
         {selectedLocation &&
           <>
             <DialogTitle>Editing data for {selectedLocation.name}</DialogTitle>
-            <DialogContent sx={{height: "80vh", paddingBottom: 0, display: 'flex', flexDirection: 'column', gap: '1em'}}>
-              <DialogContentText>
-                Click on the data you want to edit.
+            <DialogContent sx={{height: "80vh", paddingBottom: 0, display: 'flex', flexDirection: 'column'}}>
+              <DialogContentText sx={{marginBlockEnd: '0.4em'}}>
+                After modifying the data, click the &quot;Update&quot; button to save the changes.
               </DialogContentText>
               <div className={styles.edit_details_container}>
                 {isDataReady
@@ -714,6 +719,11 @@ const YourLocationsTab = (props: any) => {
                   </div>
                 }
               </div>
+              <DialogContentText sx={{marginBlockStart: '0.8em', marginBlockEnd: '0.4em'}}>
+                Data inside the table will be automatically modified on commit.<br />
+                If you want to completely delete one or multiple rows, select them from the checkbox and then click on the&nbsp;
+                <DeleteIcon fontSize='small' sx={{verticalAlign: 'top'}}/> icon.
+              </DialogContentText>
               <div className={styles.table_container}>
                 {isDataReady
                 ? <DataGrid

@@ -3,6 +3,19 @@
   height: 100%;
 }
 
+.page_title {
+  margin-block-end: 0.2em;
+}
+
+.page_subtitle {
+  margin-block-start: 0.2em;
+  margin-block-end: 0.4em;
+}
+
+.page_subtitle > a {
+  color: #1976d2;
+}
+
 .charts_section {
   display: flex;
   flex-direction: column;

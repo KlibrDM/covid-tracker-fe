@@ -333,6 +333,9 @@ const Deaths: NextPage = (props: any) => {
         <section className={styles.charts_section}>
           <div className={styles.page_details}>
             <h1 className={styles.page_title}>Covid-19 Deaths in {locationName}</h1>
+            <p className={styles.page_subtitle}>
+              Source: <a href='https://ourworldindata.org/explorers/coronavirus-data-explorer'>Our World in Data</a>
+            </p>
           </div>
           <div className={styles.chart_controller}>
             <div className={styles.chart_controller_buttons}>

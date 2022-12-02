@@ -59,6 +59,9 @@ const CustomLocationsTab = (props: any) => {
         undefined,
         true
       ).then((data: IData[]) => {
+        //Reverse the response to get the most recent data first
+        data.reverse();
+
         setRawData(data);
 
         //Empty data if there is nothing and return

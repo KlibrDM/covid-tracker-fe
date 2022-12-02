@@ -42,6 +42,13 @@
   flex-basis: 50%;
 }
 
+.new_location_form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
 .your_locations_container {
   flex-basis: 50%;
 }
@@ -58,6 +65,10 @@
   justify-content: space-evenly;
   margin: 4px;
   height: 100%;
+}
+
+.table_add_section {
+  margin-block-start: 0.8em;
 }
 
 .your_locations_add {

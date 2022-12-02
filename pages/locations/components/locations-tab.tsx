@@ -56,6 +56,9 @@ const LocationsTab = (props: any) => {
     setIsDataReady(false);
     if(selectedLocation) {
       getData(selectedLocation.code).then((data: IData[]) => {
+        //Reverse the response to get the most recent data first
+        data.reverse();
+
         setRawData(data);
 
         //Empty data if there is nothing and return
