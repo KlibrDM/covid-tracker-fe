@@ -23,11 +23,13 @@ import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
+import PublishIcon from '@mui/icons-material/Publish';
 import { saveCustomLocation } from '../../../lib/save-custom-location';
 import { deleteCustomLocation } from '../../../lib/delete-custom-location';
 import YourLocationsAddData from './your-locations-add-data';
 import { updateCustomLocationData } from '../../../lib/update-custom-locations-data';
 import { deleteCustomlocationData } from '../../../lib/delete-custom-locations-data';
+import { updateCustomLocation } from '../../../lib/update-custom-location';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};
@@ -52,7 +54,17 @@ const YourLocationsTab = (props: any) => {
   const [newAged65Older, setNewAged65Older] = useState<number>();
   const [newHospitalBedsPerThousand, setNewHospitalBedsPerThousand] = useState<number>();
   const [newIsPublic, setNewIsPublic] = useState(false);
-  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isSaved, setIsSaved] = useState<boolean>(true);
+
+  //Edit data state
+  const [editName, setEditName] = useState<string>();
+  const [editPopulation, setEditPopulation] = useState<number>();
+  const [editPopulationDensity, setEditPopulationDensity] = useState<number>();
+  const [editMedianAge, setEditMedianAge] = useState<number>();
+  const [editAged65Older, setEditAged65Older] = useState<number>();
+  const [editHospitalBedsPerThousand, setEditHospitalBedsPerThousand] = useState<number>();
+  const [editIsPublic, setEditIsPublic] = useState(false);
+  const [isEditSaved, setIsEditSaved] = useState<boolean>(true);
 
   //Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
@@ -184,6 +196,46 @@ const YourLocationsTab = (props: any) => {
     }
   };
 
+  const handleDetailsEdit = async () => {
+    const payload: ICustomLocation = {
+      ownerId: user._id,
+      is_public: editIsPublic,
+      code: selectedLocation!.code || '',
+      name: editName || '',
+      population: editPopulation,
+      population_density: editPopulationDensity,
+      median_age: editMedianAge,
+      aged_65_older: editAged65Older,
+      hospital_beds_per_thousand: editHospitalBedsPerThousand
+    };
+
+    try {
+      const response = await updateCustomLocation(payload, user.token);
+      if(typeof response === 'number'){
+        setSnackbarSeverity('error');
+        setSnackbarMessage('Error encountered! Code: ' + response);
+        setSnackbarOpen(true);
+      }
+      else if(response.message){
+        setSnackbarSeverity('error');
+        setSnackbarMessage(response.message);
+        setSnackbarOpen(true);
+      }
+      else{
+        setIsEditSaved(true);
+
+        //Snackbar
+        setSnackbarSeverity('success');
+        setSnackbarMessage('Location updated successfully');
+        setSnackbarOpen(true);
+      }
+    } catch (err) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Error updating location');
+      setSnackbarOpen(true);
+    }
+  };
+
   //Load locations
   useEffect(() => {
     const loadLocations = async () => {
@@ -208,7 +260,20 @@ const YourLocationsTab = (props: any) => {
   //When user clicks on a new location get data
   useEffect(() => {
     getTableData();
+    updateEditFormState();
   }, [selectedLocation]);
+
+  const updateEditFormState = () => {
+    if(selectedLocation){
+      setEditName(selectedLocation.name);
+      setEditPopulation(selectedLocation.population);
+      setEditPopulationDensity(selectedLocation.population_density);
+      setEditMedianAge(selectedLocation.median_age);
+      setEditAged65Older(selectedLocation.aged_65_older);
+      setEditHospitalBedsPerThousand(selectedLocation.hospital_beds_per_thousand);
+      setEditIsPublic(selectedLocation.is_public);
+    }
+  }
 
   const getTableData = () => {
     setIsDataReady(false);
@@ -556,30 +621,94 @@ const YourLocationsTab = (props: any) => {
               <DialogContentText>
                 Click on the data you want to edit.
               </DialogContentText>
-              <div className={styles.details_table_container}>
+              <div className={styles.edit_details_container}>
                 {isDataReady
-                ? <TableContainer component={Paper} variant="outlined">
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Population</TableCell>
-                        <TableCell>Pop. Density</TableCell>
-                        <TableCell>Median Age</TableCell>
-                        <TableCell>Aged 65+</TableCell>
-                        <TableCell>Hosp. Beds per 1K</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow sx={{ border: 0 }}>
-                        <TableCell>{selectedLocation.population || 'Unknown'}</TableCell>
-                        <TableCell>{selectedLocation.population_density || 'Unknown'}</TableCell>
-                        <TableCell>{selectedLocation.median_age || 'Unknown'}</TableCell>
-                        <TableCell>{selectedLocation.aged_65_older ? selectedLocation.aged_65_older + '%' : 'Unknown'}</TableCell>
-                        <TableCell>{selectedLocation.hospital_beds_per_thousand || 'Unknown'}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                ? <div className={styles.edit_details_form}>
+                    <TextField
+                      label="Name"
+                      variant="standard"
+                      size='small'
+                      inputProps={{ maxLength: 120 }}
+                      value={editName || ''}
+                      onChange={(e) => {
+                        setEditName(e.target.value);
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="Population"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editPopulation || ''}
+                      onChange={(e) => {
+                        setEditPopulation(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="Population density"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editPopulationDensity || ''}
+                      onChange={(e) => {
+                        setEditPopulationDensity(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="Median age"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editMedianAge || ''}
+                      onChange={(e) => {
+                        setEditMedianAge(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="Aged 65 or older (%)"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editAged65Older || ''}
+                      onChange={(e) => {
+                        setEditAged65Older(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="Hospital beds/1k"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editHospitalBedsPerThousand || ''}
+                      onChange={(e) => {
+                        setEditHospitalBedsPerThousand(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <FormGroup sx={{alignItems: 'flex-start'}} className={styles.edit_details_switch}>
+                      <FormControlLabel sx={{marginLeft: 0}} control={
+                        <Switch checked={editIsPublic} onChange={(e) => {
+                          setEditIsPublic(e.target.checked);
+                          setIsEditSaved(false);
+                        }} />
+                      } label="Public" labelPlacement="start" />
+                    </FormGroup>
+                    <Button
+                      className={styles.edit_details_button}
+                      variant="outlined"
+                      color='success'
+                      endIcon={<PublishIcon />}
+                      onClick={handleDetailsEdit}
+                      disabled={isEditSaved || editName === '' || !user}
+                    >
+                      Update
+                    </Button>
+                  </div>
                 : <div className={styles.spinner_container}>
                     <CircularProgress />
                   </div>
@@ -602,6 +731,7 @@ const YourLocationsTab = (props: any) => {
                       setSelectionModel(newSelectionModel);
                     }}
                     selectionModel={selectionModel}
+                    disableSelectionOnClick={true}
                   />
                 : <div className={styles.spinner_container}>
                     <CircularProgress />

@@ -82,8 +82,32 @@
   min-width: 100px;
 }
 
-.your_locations_add_fields > div > label{
+.your_locations_add_fields > div > label {
   font-size: 0.8em;
+}
+
+.edit_details_form {
+  display: flex;
+  overflow-x: auto;
+  align-items: stretch;
+}
+
+.edit_details_form > div {
+  min-width: 100px;
+}
+
+.edit_details_form > div > label {
+  font-size: 0.8em;
+}
+
+.edit_details_switch {
+  align-self: flex-end;
+  margin-left: 10px;
+  margin-right: 5px;
+}
+
+.edit_details_button {
+  min-width: 120px;
 }
 
 .spinner_container {
