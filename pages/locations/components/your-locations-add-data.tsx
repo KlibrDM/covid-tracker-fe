@@ -7,6 +7,7 @@ import { Button, Snackbar, Alert } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { addCustomLocationData } from '../../../lib/add-custom-locations-data';
+import moment from 'moment';
 
 const YourLocationsAddData = (props: any) => {
   const user = props.user || {};
@@ -24,6 +25,8 @@ const YourLocationsAddData = (props: any) => {
 
   const handleSave = async () => {
     try {
+      //Get rid of the time
+      data.date = new Date(moment(data.date).format('YYYY-MM-DD'));
       await addCustomLocationData(data, user.token).then((res: any) => {
         if(!res.message) {
           refreshData();
@@ -50,7 +53,7 @@ const YourLocationsAddData = (props: any) => {
               label="Start Date"
               value={data.date}
               onChange={(newDate) => {
-                setData({...data, date: new Date(newDate!)});
+                setData({...data, date: newDate!});
               }}
               renderInput={(params) => <TextField variant="standard" size='small' {...params} />}
             />

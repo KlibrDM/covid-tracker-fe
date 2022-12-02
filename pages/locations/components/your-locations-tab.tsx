@@ -3,7 +3,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, FormControlLabel, FormGroup, Switch, Snackbar, DialogContentText } from '@mui/material';
-import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector, GridRowModel } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector, GridRowModel, GridSelectionModel } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { IData } from '../../../models/data';
@@ -27,6 +27,7 @@ import { saveCustomLocation } from '../../../lib/save-custom-location';
 import { deleteCustomLocation } from '../../../lib/delete-custom-location';
 import YourLocationsAddData from './your-locations-add-data';
 import { updateCustomLocationData } from '../../../lib/update-custom-locations-data';
+import { deleteCustomlocationData } from '../../../lib/delete-custom-locations-data';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};
@@ -40,6 +41,7 @@ const YourLocationsTab = (props: any) => {
   const [isDataReady, setIsDataReady] = useState(false);
 
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
 
   //Form state
   const [newCode, setNewCode] = useState<string>();
@@ -88,6 +90,26 @@ const YourLocationsTab = (props: any) => {
     catch (err) {
       setSnackbarSeverity('error');
       setSnackbarMessage('Couldn\'t update data');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const deleteSelectedData = async () => {
+    try {
+      const response = await deleteCustomlocationData(user.token, selectedLocation!.code, selectionModel as string[]);
+      if(!response.message){
+        setSnackbarSeverity('warning');
+        setSnackbarMessage('Data successfully deleted');
+        setSnackbarOpen(true);
+
+        //Update rows
+        const newRows = displayData.rows.filter(e => !selectionModel.includes(e.id));
+        setDisplayData({...displayData, rows: newRows});
+      }
+    }
+    catch (err) {
+      setSnackbarSeverity('error');
+      setSnackbarMessage('Couldn\'t delete data');
       setSnackbarOpen(true);
     }
   };
@@ -299,6 +321,13 @@ const YourLocationsTab = (props: any) => {
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
       <CustomExportButton />
+      <IconButton
+        color="primary"
+        disabled={!selectionModel.length}
+        onClick={deleteSelectedData}
+      >
+        <DeleteIcon />
+      </IconButton>
     </GridToolbarContainer>
   );
 
@@ -568,6 +597,11 @@ const YourLocationsTab = (props: any) => {
                     experimentalFeatures={{ newEditingApi: true }}
                     processRowUpdate={handleRowUpdate}
                     onProcessRowUpdateError={handleRowUpdateError}
+                    checkboxSelection={!!displayData.rows.length}
+                    onSelectionModelChange={(newSelectionModel) => {
+                      setSelectionModel(newSelectionModel);
+                    }}
+                    selectionModel={selectionModel}
                   />
                 : <div className={styles.spinner_container}>
                     <CircularProgress />
