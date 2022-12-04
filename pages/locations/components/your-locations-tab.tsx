@@ -42,6 +42,8 @@ const YourLocationsTab = (props: any) => {
   const [displayData, setDisplayData] = useState<{columns: GridColDef[], rows: any[]}>({columns: [], rows: []});
   const [isDataReady, setIsDataReady] = useState(false);
 
+  const [searchFilter, setSearchFilter] = useState('');
+
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectionModel, setSelectionModel] = useState<GridSelectionModel>([]);
 
@@ -513,9 +515,20 @@ const YourLocationsTab = (props: any) => {
             locations.length ?
               <>
                 <h3>Personal Custom Locations</h3>
+                <TextField
+                  type="text"
+                  name="search"
+                  id="search"
+                  label="Search"
+                  variant="outlined"
+                  value={searchFilter}
+                  onChange={(e) => setSearchFilter(e.target.value)}
+                  size="small"
+                  sx={{ marginBottom: '0.6em' }}
+                />
                 <div className={styles.locations_group}>
                 {
-                  locations.map((location, index) => (
+                  locations.filter(location => location.name.toLowerCase().includes(searchFilter)).map((location, index) => (
                     <Card
                       key={location.code}
                       className={styles.locations_card}

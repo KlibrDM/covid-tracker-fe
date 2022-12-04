@@ -2,7 +2,7 @@ import styles from '../../../styles/Locations.module.css'
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, Alert, TextField } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -22,6 +22,8 @@ import { getCustomLocationsPublic } from '../../../lib/get-custom-locations-publ
 const CustomLocationsTab = (props: any) => {
   const [locations, setLocations] = useState<ICustomLocation[]>([]);
   const [locationsLoaded, setLocationsLoaded] = useState(false);
+
+  const [searchFilter, setSearchFilter] = useState('');
 
   const [isDataDialogOpen, setIsDataDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<ICustomLocation>();
@@ -172,9 +174,20 @@ const CustomLocationsTab = (props: any) => {
           locations.length ?
             <>
               <h3>Public Custom Locations</h3>
+              <TextField
+                type="text"
+                name="search"
+                id="search"
+                label="Search"
+                variant="outlined"
+                value={searchFilter}
+                onChange={(e) => setSearchFilter(e.target.value)}
+                size="small"
+                sx={{ marginBottom: '0.6em' }}
+              />
               <div className={styles.locations_group}>
               {
-                locations.map((location, index) => (
+                locations.filter(location => location.name.toLowerCase().includes(searchFilter)).map((location, index) => (
                   <Card
                     key={location.code}
                     className={styles.locations_card}

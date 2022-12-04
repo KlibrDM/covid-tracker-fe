@@ -3,7 +3,7 @@ import { ILocation } from '../../../models/location';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import { useState, useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProgress, TextField } from '@mui/material';
 import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
@@ -35,6 +35,8 @@ const LocationsTab = (props: any) => {
   sortedContinents.forEach(e => displayLocations.set(e, locations.filter(l => l.continent === e || (!l.continent && e === "Other"))));
   // Sort countries in each continent
   displayLocations.forEach((value, key) => displayLocations.set(key, value.sort((a, b) => a.name.localeCompare(b.name))));
+
+  const [searchFilter, setSearchFilter] = useState('');
 
   const [isDataDialogOpen, setIsDataDialogOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<ILocation>();
@@ -165,26 +167,48 @@ const LocationsTab = (props: any) => {
   return (
     <>
       <div className={styles.locations_tab_container}>
+        <h3>Locations</h3>
+        <TextField
+          type="text"
+          name="search"
+          id="search"
+          label="Search"
+          variant="outlined"
+          value={searchFilter}
+          onChange={(e) => setSearchFilter(e.target.value)}
+          size="small"
+        />
         {
           Array.from(displayLocations.keys()).map((continent, index) => (
             <div key={index}>
-              <h3>{continent}</h3>
-              <div className={styles.locations_group}>
               {
-                displayLocations.get(continent)?.map((location, index) => (
-                  <Card
-                    key={location.code}
-                    className={styles.locations_card}
-                    onClick={() => handleDataDialogOpen(location)}
-                  >
-                    <CardContent className={styles.location_card_content}>
-                      <h4>{location.name}</h4>
-                      {location.population && <p>Population: {location.population}</p>}
-                    </CardContent>
-                  </Card>
-                ))
+                displayLocations.get(continent) &&
+                displayLocations.get(continent)!.filter(
+                  location => location.name.toLowerCase().includes(searchFilter)
+                ).length > 0 && (
+                  <>
+                    <h3>{continent}</h3>
+                    <div className={styles.locations_group}>
+                    {
+                      displayLocations.get(continent)?.filter(
+                        location => location.name.toLowerCase().includes(searchFilter)
+                      ).map((location, index) => (
+                        <Card
+                          key={location.code}
+                          className={styles.locations_card}
+                          onClick={() => handleDataDialogOpen(location)}
+                        >
+                          <CardContent className={styles.location_card_content}>
+                            <h4>{location.name}</h4>
+                            {location.population && <p>Population: {location.population}</p>}
+                          </CardContent>
+                        </Card>
+                      ))
+                    }
+                    </div>
+                  </>
+                )
               }
-              </div>
             </div>
           ))
         }
