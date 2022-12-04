@@ -1,6 +1,6 @@
 export async function loadLocations() {
-  const res = await fetch('http://localhost:8001/locations')
-  const data = await res.json()
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}locations`);
+  const data = await res.json();
 
-  return data
+  return data;
 }

@@ -1,7 +1,7 @@
 import { ICustomLocation } from "../models/custom-location";
 
 export async function getCustomLocationsPersonal(token: string) {
-  const res = await fetch('http://localhost:8001/custom-locations', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -12,14 +12,14 @@ export async function getCustomLocationsPersonal(token: string) {
 }
 
 export async function getCustomLocationsPublic() {
-  const res = await fetch('http://localhost:8001/custom-locations/get-public');
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations/get-public`);
   const data = await res.json();
 
   return data;
 }
 
 export async function deleteCustomLocation(code: string, token: string) {
-  const res = await fetch(`http://localhost:8001/custom-locations/${code}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations/${code}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export async function deleteCustomLocation(code: string, token: string) {
 }
 
 export async function updateCustomLocation(payload: ICustomLocation, token: string) {
-  const res = await fetch(`http://localhost:8001/custom-locations/${payload.code}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations/${payload.code}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
@@ -47,7 +47,7 @@ export async function updateCustomLocation(payload: ICustomLocation, token: stri
 }
 
 export async function saveCustomLocation(payload: ICustomLocation, token: string) {
-  const res = await fetch('http://localhost:8001/custom-locations', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

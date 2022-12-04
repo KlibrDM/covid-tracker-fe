@@ -1,5 +1,5 @@
 export async function login(email: string, password: string) {
-  const res = await fetch('http://localhost:8001/user/login', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}user/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -16,7 +16,7 @@ export async function login(email: string, password: string) {
 }
 
 export async function register(email: string, password: string, location: string) {
-  const res = await fetch('http://localhost:8001/user/register', {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}user/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

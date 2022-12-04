@@ -24,10 +24,10 @@ export async function getData(country: string, projection?: string | string[], s
     useCustomLocationsStr = '&use_custom_locations=true';
   }
 
-  const res = await fetch('http://localhost:8001/get-data?' + countryStr + startDateStr + endDateStr + projectionStr + useCustomLocationsStr);
-  const data = await res.json()
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}get-data?${countryStr}${startDateStr}${endDateStr}${projectionStr}${useCustomLocationsStr}`);
+  const data = await res.json();
 
-  return data
+  return data;
 }
 
 export async function getLatestData(country?: string | string[], projection?: string | string[]) {
@@ -54,8 +54,8 @@ export async function getLatestData(country?: string | string[], projection?: st
     }
   }
 
-  const res = await fetch('http://localhost:8001/get-latest-data?' + countryStr + projectionStr)
-  const data = await res.json()
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}get-latest-data?${countryStr}${projectionStr}`);
+  const data = await res.json();
 
-  return data
+  return data;
 }
