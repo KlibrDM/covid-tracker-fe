@@ -6,8 +6,8 @@ import SaveIcon from '@mui/icons-material/Save';
 import { Button, Snackbar, Alert } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { addCustomLocationData } from '../../../lib/add-custom-locations-data';
 import moment from 'moment';
+import { addCustomLocationData } from '../../../lib/custom-location-data.service';
 
 const YourLocationsAddData = (props: any) => {
   const user = props.user || {};

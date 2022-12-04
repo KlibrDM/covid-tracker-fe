@@ -1,12 +1,12 @@
 import type { NextApiRequest, NextApiResponse, NextPage } from 'next'
 import Head from 'next/head'
-import Layout from '../../components/layout'
+import Layout from '../../shared-components/layout'
 import styles from '../../styles/Builder.module.css'
 import Chart from "chart.js/auto";
 import { BubbleDataPoint, CategoryScale, ChartConfiguration, ChartDataset, ChartTypeRegistry, ScatterDataPoint } from "chart.js";
 import { Chart as ChartJS } from "react-chartjs-2";
 import { useEffect, useRef, useState } from 'react';
-import { loadLocations } from '../../lib/load-locations';
+import { loadLocations } from '../../lib/location.service';
 import { ILocation } from '../../models/location';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -22,9 +22,9 @@ import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import moment from 'moment';
 import _ from 'lodash';
-import { IChart, IChartValue, IIndicatorSettings, Indicators } from '../../models/custom-charts';
+import { IChart, IChartValue, IIndicatorSettings, Indicators } from '../../models/custom-chart';
 import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
-import { getData } from '../../lib/get-data';
+import { getData } from '../../lib/data.service';
 import { IData } from '../../models/data';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { sevenDayAverage } from '../../utils/calculate-7-day-average';
@@ -33,9 +33,8 @@ import BuilderDialog from './components/builder-dialog';
 import UploadIcon from '@mui/icons-material/Upload';
 import SaveIcon from '@mui/icons-material/Save';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
-import { saveCustomChart } from '../../lib/save-custom-chart';
 import BuilderLoadDialog from './components/load-dialog';
-import { updateCustomChart } from '../../lib/update-custom-chart';
+import { saveCustomChart, updateCustomChart } from '../../lib/custom-chart.service';
 
 Chart.register(CategoryScale);
 

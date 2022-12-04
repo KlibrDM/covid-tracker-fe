@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
-import Layout from '../../components/layout'
+import Layout from '../../shared-components/layout'
 
 const About: NextPage = () => {
   return (

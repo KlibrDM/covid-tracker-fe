@@ -8,7 +8,7 @@ import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { IData } from '../../../models/data';
-import { getData } from '../../../lib/get-data';
+import { getData } from '../../../lib/data.service';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';

@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { useCookies } from "react-cookie";
-import { login } from "../lib/login";
 import Router from 'next/router';
 import Dialog from "./dialog";
-import styles from '../styles/Login.module.css';
-import { Alert, TextField } from "@mui/material";
+import styles from '../styles/Register.module.css';
+import { loadLocations } from "../lib/location.service";
+import { register } from "../lib/user.service";
+import { Alert, FormControl, InputLabel, Select, TextField } from "@mui/material";
 
-const Login = () => {
+const Register = () => {
   const [cookie, setCookie] = useCookies(["user"]);
   const [showDialog, setShowDialog] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<{message: string} | undefined>(undefined);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("ROU");
+  const [locations, setLocations] = useState<{code: string, name: string}[]>([]);
 
   const handleEmailChange = (e: any) => {
     setEmail(e.target.value);
@@ -21,10 +24,19 @@ const Login = () => {
     setPassword(e.target.value);
   }
 
-  const handleLogin = async (e: any) => {
+  const handleLocationChange = (e: any) => {
+    setSelectedLocation(e.target.value);
+  }
+
+  const handleDialogOpen = async () => {
+    setShowDialog(true);
+    setLocations(await loadLocations());
+  }
+
+  const handleRegister = async (e: any) => {
     e.preventDefault();
     try {
-      const response = await login(email, password);
+      const response = await register(email, password, selectedLocation);
       if(response.message){
         setErrorMessage(response);
       }
@@ -43,12 +55,12 @@ const Login = () => {
 
   return (
     <>
-      <button className={styles.login_button} onClick={() => setShowDialog(true)}>Login</button>
+      <button className={styles.register_button} onClick={handleDialogOpen}>Register</button>
       {
         showDialog &&
         <Dialog closeFunction={() => setShowDialog(false)} width={400}>
-          <form onSubmit={handleLogin} className={styles.form}>
-            <h2>Login</h2>
+          <form onSubmit={handleRegister} className={styles.form}>
+            <h2>Register</h2>
             <TextField
               type="email"
               name="email"
@@ -71,7 +83,23 @@ const Login = () => {
               required
               fullWidth
             />
-            <input type="submit" value="Login"/>
+            <FormControl variant="standard" fullWidth>
+              <InputLabel shrink={true} htmlFor="location">Location</InputLabel>
+              <Select
+                native
+                labelId="location"
+                label="Location"
+                defaultValue={selectedLocation}
+                onChange={handleLocationChange}
+              >
+                {
+                  locations.map((location, index) => (
+                    <option key={index} value={location.code}>{location.name}</option>
+                  ))
+                }
+              </Select>
+            </FormControl>
+            <input type="submit" value="Register"/>
             {errorMessage && <Alert severity="error" className={styles.error_message}>{errorMessage.message}</Alert>}
           </form>
         </Dialog>
@@ -80,4 +108,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Register

@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse, NextPage } from 'next'
 import Head from 'next/head'
-import Layout from '../../components/layout'
+import Layout from '../../shared-components/layout'
 import styles from '../../styles/Locations.module.css'
 import { useState } from 'react';
-import { loadLocations } from '../../lib/load-locations';
+import { loadLocations } from '../../lib/location.service';
 import { ILocation } from '../../models/location';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';

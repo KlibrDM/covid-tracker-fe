@@ -7,10 +7,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { IChart } from '../../../models/custom-charts';
-import { getChartsPublic } from '../../../lib/get-charts-public';
-import { getChartsPersonal } from '../../../lib/get-charts-personal';
-import { deleteChart } from '../../../lib/delete-chart';
+import { IChart } from '../../../models/custom-chart';
+import { deleteChart, getChartsPersonal, getChartsPublic } from '../../../lib/custom-chart.service';
 
 const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
   const user = props.user || {};

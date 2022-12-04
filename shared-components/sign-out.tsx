@@ -8,7 +8,12 @@ const SignOut = () => {
   const handleSignOut = async () => {
     try {
       removeCookie("user");
-      Router.replace('/');
+      if(Router.pathname === "/"){
+        Router.reload();
+      }
+      else{
+        Router.push("/");
+      }
     } catch (err) {
       console.log(err)
     }

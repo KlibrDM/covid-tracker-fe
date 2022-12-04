@@ -7,7 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import { ChartType, ChartTypes, Indicators } from '../../../models/custom-charts';
+import { ChartType, ChartTypes, Indicators } from '../../../models/custom-chart';
 
 const BuilderDialog = forwardRef((props: any, ref: any) => {
   const [location, setLocation] = useState(props.location as string);

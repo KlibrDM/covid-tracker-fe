@@ -7,7 +7,7 @@ import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import { IData } from '../../../models/data';
-import { getData } from '../../../lib/get-data';
+import { getData } from '../../../lib/data.service';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -17,19 +17,15 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import moment from 'moment';
 import { ICustomLocation } from '../../../models/custom-location';
-import { getCustomLocationsPersonal } from '../../../lib/get-custom-locations-personal';
 import TextField from '@mui/material/TextField';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import IconButton from '@mui/material/IconButton';
 import PublishIcon from '@mui/icons-material/Publish';
-import { saveCustomLocation } from '../../../lib/save-custom-location';
-import { deleteCustomLocation } from '../../../lib/delete-custom-location';
 import YourLocationsAddData from './your-locations-add-data';
-import { updateCustomLocationData } from '../../../lib/update-custom-locations-data';
-import { deleteCustomlocationData } from '../../../lib/delete-custom-locations-data';
-import { updateCustomLocation } from '../../../lib/update-custom-location';
+import { deleteCustomLocation, getCustomLocationsPersonal, saveCustomLocation, updateCustomLocation } from '../../../lib/custom-location.service';
+import { deleteCustomlocationData, updateCustomLocationData } from '../../../lib/custom-location-data.service';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};

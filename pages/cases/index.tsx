@@ -1,16 +1,16 @@
 import type { NextApiRequest, NextApiResponse, NextPage } from 'next'
 import Head from 'next/head'
-import Layout from '../../components/layout'
+import Layout from '../../shared-components/layout'
 import styles from '../../styles/ChartPage.module.css'
 import Chart from "chart.js/auto";
 import { BubbleDataPoint, CategoryScale, ChartConfiguration, ChartDataset, ChartTypeRegistry, ScatterDataPoint } from "chart.js";
 import { Chart as ChartJS } from "react-chartjs-2";
 import { IData } from '../../models/data';
-import { getData } from '../../lib/get-data';
+import { getData } from '../../lib/data.service';
 import { useEffect, useRef, useState } from 'react';
-import LatestData from '../../components/latest-data';
-import { getLatestData } from '../../lib/get-latest-data';
-import { loadLocations } from '../../lib/load-locations';
+import LatestData from '../../shared-components/latest-data';
+import { getLatestData } from '../../lib/data.service';
+import { loadLocations } from '../../lib/location.service';
 import { ILocation } from '../../models/location';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
