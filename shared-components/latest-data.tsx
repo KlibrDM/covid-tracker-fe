@@ -135,12 +135,7 @@ const LatestData = (props: any) => {
   return (
     <div className={styles.latest_data_container}>
       <div className={styles.latest_data_header}>
-        <h1>
-          Latest Data
-          {displayData && displayData[0].date &&
-            <span className={styles.latest_data_header_date}>({moment(displayData[0].date).format('YYYY-MM-DD')})</span>
-          }
-        </h1>
+        <h1>Latest Data</h1>
         <div className={styles.latest_data_header_inputs}>
           <TextField
             type="text"
