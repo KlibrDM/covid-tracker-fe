@@ -85,3 +85,39 @@ export const CASES_CHART_OPTIONS = (data: ChartDataset<keyof ChartTypeRegistry, 
     }
   },
 });
+
+export const COMMON_PERCENTAGE_CHART_OPTIONS: _DeepPartialObject<CoreChartOptions<keyof ChartTypeRegistry> & ElementChartOptions<keyof ChartTypeRegistry> & PluginChartOptions<keyof ChartTypeRegistry> & DatasetChartOptions<keyof ChartTypeRegistry> & ScaleChartOptions<keyof ChartTypeRegistry>> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    intersect: false,
+    mode: 'index',
+  },
+  plugins: {
+    legend: {
+      position: 'bottom',
+      reverse: true
+    },
+    zoom: {
+      zoom: {
+        drag:{
+          enabled: true,
+        },
+        wheel: {
+          enabled: true,
+        },
+        pinch: {
+          enabled: true
+        },
+        mode: 'x'
+      }
+    },
+    tooltip: {
+      callbacks: {
+        label: function(context) {
+          return context.dataset.label + ': ' + Math.round(context.parsed.y * 100) / 100 + '%';
+        }
+      }
+    }
+  },
+}

@@ -53,3 +53,10 @@ export const EXCESS_MORTALITY_FILL_COLORS = {
   above: '#ff232b77',
   below: '#23ff2b77'
 }
+
+export const TESTS_COLOR = '#ffa32b';
+export const TESTS_FILL_COLORS = {
+  target: 'origin',
+  above: '#ffa32b77',
+  below: '#ffa32b77'
+}
