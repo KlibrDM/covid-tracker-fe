@@ -1,9 +1,9 @@
-import { MenuItem, TextField } from '@mui/material';
-import moment from 'moment';
+import { Button, MenuItem, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { IData } from '../models/data';
 import { ILocation } from '../models/location';
-import styles from '../styles/Latest-Data.module.css'
+import styles from '../styles/Latest-Data.module.css';
+import { getCustomLocationsPersonal, getCustomLocationsPublic } from '../lib/custom-location.service';
 
 const sortTypes = {
   NameAscending: 'Name ascending',
@@ -29,6 +29,9 @@ const LatestData = (props: any) => {
   const [searchValue, setSearchValue] = useState('');
   const [sort, setSort] = useState<sortType>(sortTypes.NameAscending);
   const [displayData, setDisplayData] = useState<IData[]>();
+  const [showCustom, setShowCustom] = useState(false);
+  const [customPublicLocations, setCustomPublicLocations] = useState<string[]>([]);
+  const [customPersonalLocations, setCustomPersonalLocations] = useState<string[]>([]);
 
   const location = props.location as string;
   const locations = props.locations as ILocation[];
@@ -38,6 +41,7 @@ const LatestData = (props: any) => {
   const key2 = props.key2 as string;
   const label2 = props.label2 as string;
   const changeLocation = props.changeLocation;
+  const user = props.user || {};
 
   //Add new sort types
   sortTypes.Value1Asc = label1 + ' ascending';
@@ -131,6 +135,19 @@ const LatestData = (props: any) => {
   const addNaN = (data: ILatestData[], NaNValues: ILatestData[]) => {
     return data.concat(NaNValues);
   }
+
+  const switchCustom = async () => {
+    if(!showCustom){
+      const publicLocations = await getCustomLocationsPublic();
+      setCustomPublicLocations(publicLocations);
+      if(user.token){
+        const personalLocations = await getCustomLocationsPersonal(user.token);
+        setCustomPersonalLocations(personalLocations);
+      }
+    }
+
+    setShowCustom(!showCustom);
+  }
   
   return (
     <div className={styles.latest_data_container}>
@@ -164,11 +181,18 @@ const LatestData = (props: any) => {
               <MenuItem key={index} value={sortTypes[key as keyof typeof sortTypes]}>{sortTypes[key as keyof typeof sortTypes]}</MenuItem>
             ))}
           </TextField>
+          <Button
+            variant="outlined"
+            size="small"
+            sx={{marginTop: -1}}
+            onClick={switchCustom}>
+            {showCustom ? 'Show OWID locations' : 'Show custom locations'}
+          </Button>
         </div>
       </div>
       
       <div className={styles.latest_data_list}>
-        {displayData && displayData.map((e: any) => {
+        {!showCustom && displayData && displayData.map((e: any) => {
           return (
             <div 
               key={e.location_code} 
@@ -188,6 +212,30 @@ const LatestData = (props: any) => {
             </div>
           )
         })}
+        {showCustom && <>
+          {customPersonalLocations.length ? <h3>Personal</h3> : null}
+          {customPersonalLocations.length ? customPersonalLocations.map((e: any) => {
+            return (
+              <div
+                key={e.code}
+                className={styles.latest_data_item}
+                onClick={() => changeLocation(e.code, true)}>
+                <h4>{e.name}</h4>
+              </div>
+            )
+          }) : null}
+          {customPublicLocations.length ? <h3>Public</h3> : null}
+          {customPublicLocations.length ? customPublicLocations.map((e: any) => {
+            return (
+              <div
+                key={e.code}
+                className={styles.latest_data_item}
+                onClick={() => changeLocation(e.code, true)}>
+                <h4>{e.name}</h4>
+              </div>
+            )
+          }) : null}
+        </>}
       </div>
     </div>
   )

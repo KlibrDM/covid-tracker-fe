@@ -22,6 +22,7 @@ import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS, COMMON_PERCENTAGE_CHART_OPTI
 import { DEFAULT_CHART_TYPES, DEFAULT_START_DATES, STRINGENCY_INDEX_COLOR, STRINGENCY_INDEX_FILL_COLORS, TESTS_COLOR, TESTS_FILL_COLORS } from '../../lib/constants';
 import { IChartType } from '../../models/charts';
 import { isChartEmpty } from '../../utils/isChartEmpty';
+import { IUser } from '../../models/user';
 
 Chart.register(CategoryScale);
 
@@ -37,10 +38,12 @@ const Testing: NextPage = (props: any) => {
   const [showStringency, setShowStringency] = useState<boolean>(false);
   const [chartReady, setChartReady] = useState<boolean>(false);
 
+  const user = props.user as IUser;
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
   const locationName = locations.find(e => e.code === location)?.name;
   const latestData = props.latestData as IData[];
+  const [isCustomLocation, setIsCustomLocation] = useState<boolean>(false);
 
   //Get chart data
   const chartLabels: string[] = props.chartLabels;
@@ -163,7 +166,7 @@ const Testing: NextPage = (props: any) => {
       const queryStartDate = newStartDate === 'ALL' ? '' : newStartDate;
 
       //load data with new start date
-      getData(location, ['new_tests', 'total_tests', 'positive_rate', 'test_units', 'stringency_index'], queryStartDate).then((data: IData[]) => {
+      getData(location, ['new_tests', 'total_tests', 'positive_rate', 'test_units', 'stringency_index'], queryStartDate, undefined, isCustomLocation).then((data: IData[]) => {
         const {
           chartLabels,
           newTestsChartData,
@@ -268,12 +271,19 @@ const Testing: NextPage = (props: any) => {
     }
   }
 
-  const changeLocation = (newLocation: string) => {
+  const changeLocation = (newLocation: string, isCustom?: boolean) => {
+    if(isCustom){
+      setIsCustomLocation(true);
+    }
+    else{
+      setIsCustomLocation(false);
+    }
+
     if (newLocation) {
       const queryStartDate = startDate === 'ALL' ? '' : startDate;
 
       //load data with new location
-      getData(newLocation, ['new_tests', 'total_tests', 'positive_rate', 'test_units', 'stringency_index'], queryStartDate).then((data: IData[]) => {
+      getData(newLocation, ['new_tests', 'total_tests', 'positive_rate', 'test_units', 'stringency_index'], queryStartDate, undefined, isCustom).then((data: IData[]) => {
         const {
           chartLabels,
           newTestsChartData,
@@ -422,6 +432,7 @@ const Testing: NextPage = (props: any) => {
             key2="new_tests"
             label2="New tests"
             changeLocation={changeLocation}
+            user={user}
           />
         </section>
       </section>
@@ -430,6 +441,7 @@ const Testing: NextPage = (props: any) => {
 }
 
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
   const testsData: IData[] = await getData(location, ['new_tests', 'total_tests', 'positive_rate', 'test_units', 'stringency_index'], defaultStartDate);
@@ -446,6 +458,7 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
   } = prepareChartData(testsData);
 
   return { props: {
+    user: user,
     location: location,
     locations: locations,
     latestData: latestData,

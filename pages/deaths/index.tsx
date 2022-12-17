@@ -22,6 +22,7 @@ import { CASES_CHART_OPTIONS, COMMON_CHART_OPTIONS } from '../../lib/chart-optio
 import { DEATHS_COLOR, DEATHS_FILL_COLORS, DEFAULT_CHART_TYPES, DEFAULT_START_DATES, EXCESS_MORTALITY_COLOR, EXCESS_MORTALITY_FILL_COLORS, STRINGENCY_INDEX_COLOR, STRINGENCY_INDEX_FILL_COLORS } from '../../lib/constants';
 import { IChartType } from '../../models/charts';
 import { isChartEmpty } from '../../utils/isChartEmpty';
+import { IUser } from '../../models/user';
 
 Chart.register(CategoryScale);
 
@@ -37,10 +38,12 @@ const Deaths: NextPage = (props: any) => {
   const [showStringency, setShowStringency] = useState<boolean>(false);
   const [chartReady, setChartReady] = useState<boolean>(false);
 
+  const user = props.user as IUser;
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
   const locationName = locations.find(e => e.code === location)?.name;
   const latestData = props.latestData as IData[];
+  const [isCustomLocation, setIsCustomLocation] = useState<boolean>(false);
 
   //Get chart data
   const chartLabels: string[] = props.chartLabels;
@@ -175,7 +178,7 @@ const Deaths: NextPage = (props: any) => {
       const queryStartDate = newStartDate === 'ALL' ? '' : newStartDate;
 
       //load data with new start date
-      getData(location, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], queryStartDate).then((data: IData[]) => {
+      getData(location, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], queryStartDate, undefined, isCustomLocation).then((data: IData[]) => {
         const {
           chartLabels,
           excessMortalityChartLabels,
@@ -281,12 +284,19 @@ const Deaths: NextPage = (props: any) => {
     }
   }
 
-  const changeLocation = (newLocation: string) => {
+  const changeLocation = (newLocation: string, isCustom?: boolean) => {
+    if(isCustom){
+      setIsCustomLocation(true);
+    }
+    else{
+      setIsCustomLocation(false);
+    }
+
     if (newLocation) {
       const queryStartDate = startDate === 'ALL' ? '' : startDate;
 
       //load data with new location
-      getData(newLocation, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], queryStartDate).then((data: IData[]) => {
+      getData(newLocation, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], queryStartDate, undefined, isCustom).then((data: IData[]) => {
         const {
           chartLabels,
           excessMortalityChartLabels,
@@ -435,6 +445,7 @@ const Deaths: NextPage = (props: any) => {
             key2="new_deaths"
             label2="New deaths"
             changeLocation={changeLocation}
+            user={user}
           />
         </section>
       </section>
@@ -443,6 +454,7 @@ const Deaths: NextPage = (props: any) => {
 }
 
 export async function getServerSideProps({req, res}: {req: NextApiRequest, res: NextApiResponse}) {
+  const user = req.cookies.user ? JSON.parse(req.cookies.user) : null;
   const locations: ILocation[] = await loadLocations();
   const location = req.cookies.user ? JSON.parse(req.cookies.user).location_code : 'ROU';
   const deathsData: IData[] = await getData(location, ['new_deaths', 'total_deaths', 'stringency_index', 'excess_mortality', 'excess_mortality_cumulative'], defaultStartDate);
@@ -460,6 +472,7 @@ export async function getServerSideProps({req, res}: {req: NextApiRequest, res: 
   } = prepareChartData(deathsData);
 
   return { props: {
+    user: user,
     location: location,
     locations: locations,
     latestData: latestData,
