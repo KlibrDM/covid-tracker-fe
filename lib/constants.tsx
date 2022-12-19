@@ -60,3 +60,17 @@ export const TESTS_FILL_COLORS = {
   above: '#ffa32b77',
   below: '#ffa32b77'
 }
+
+export const VACCINATIONS_COLOR = '#11d011';
+export const VACCINATIONS_FILL_COLORS = {
+  target: 'origin',
+  above: '#11d01177',
+  below: '#11d01177'
+}
+
+export const FULLY_VACCINATED_COLOR = '#00aa00';
+export const FULLY_VACCINATED_FILL_COLORS = {
+  target: 'origin',
+  above: '#00aa0077',
+  below: '#00aa0077'
+}
