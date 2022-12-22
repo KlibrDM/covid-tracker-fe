@@ -74,3 +74,17 @@ export const FULLY_VACCINATED_FILL_COLORS = {
   above: '#00aa0077',
   below: '#00aa0077'
 }
+
+export const HOSPITAL_COLOR = '#f0a6ff';
+export const HOSPITAL_FILL_COLORS = {
+  target: 'origin',
+  above: '#f0a6ff77',
+  below: '#f0a6ff77'
+}
+
+export const ICU_COLOR = '#ff3d5e';
+export const ICU_FILL_COLORS = {
+  target: 'origin',
+  above: '#ff3d5e77',
+  below: '#ff3d5e77'
+}
