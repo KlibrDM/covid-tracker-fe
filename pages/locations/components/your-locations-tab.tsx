@@ -411,7 +411,7 @@ const YourLocationsTab = (props: any) => {
               inputProps={{ maxLength: 8 }}
               value={newCode || ''}
               onChange={(e) => {
-                setNewCode(e.target.value);
+                setNewCode(e.target.value.toUpperCase());
                 setIsSaved(false);
               }}
             />
