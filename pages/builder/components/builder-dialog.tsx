@@ -8,10 +8,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { ChartType, ChartTypes, Indicators } from '../../../models/custom-chart';
+import { getCustomLocationsPersonal, getCustomLocationsPublic } from '../../../lib/custom-location.service';
+import { ICustomLocation } from '../../../models/custom-location';
 
 const BuilderDialog = forwardRef((props: any, ref: any) => {
+  const user = props.user || {};
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
+  const [customLocations, setCustomLocations] = useState<ICustomLocation[]>([]);
 
   const handleIndicatorClose = props.handleIndicatorClose;
   const handleIndicatorAdd = props.handleIndicatorAdd;
@@ -21,6 +25,7 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
   const [dialogIndicatorPerMillion, setDialogIndicatorPerMillion] = useState<boolean>(false);
   const [dialogIndicatorAverage7Days, setDialogIndicatorAverage7Days] = useState<boolean>(false);
   const [dialogIndicatorAverage14Days, setDialogIndicatorAverage14Days] = useState<boolean>(false);
+  const [dialogIsCustomLocation, setDialogIsCustomLocation] = useState<boolean>(false);
   const [dialogLocation, setDialogLocation] = useState<string>(location);
   const [dialogChartType, setDialogChartType] = useState<ChartType>(ChartTypes[0]);
   const [dialogColor, setDialogColor] = useState<string>("#12b3eb");
@@ -40,10 +45,25 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
     updateDialogState
   }
 
+  const getCustomLocations = async () => {
+    const resPersonal = user.token ? await getCustomLocationsPersonal(user.token) : [];
+    const resPublic = await getCustomLocationsPublic();
+
+    //Use a map to have unique locations
+    const resMap = new Map<string, ICustomLocation>();
+    resPersonal.forEach((location: ICustomLocation) => resMap.set(location.code, location));
+    resPublic.forEach((location: ICustomLocation) => resMap.set(location.code, location));
+
+    const res = Array.from(resMap.values());
+
+    setCustomLocations(res);
+    setDialogLocation(res[0].code);
+  }
+
   return (
     <Dialog open={isIndicatorDialogOpen} onClose={handleIndicatorClose}>
       <DialogTitle>New indicator</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{minWidth: 400}}>
         <FormControl variant="standard" fullWidth>
           <InputLabel shrink={true} htmlFor="indicator">Indicator</InputLabel>
           <Select
@@ -85,6 +105,18 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
           } label="Calculate 14 day average" labelPlacement="end" />
         </FormGroup>
 
+        <FormGroup>
+          <FormControlLabel control={
+            <Switch checked={dialogIsCustomLocation} onChange={(e) => {
+              setDialogIsCustomLocation(e.target.checked);
+              getCustomLocations();
+              if(!e.target.checked) {
+                setDialogLocation(location);
+              }
+            }} />
+          } label="Use custom location" labelPlacement="end" />
+        </FormGroup>
+
         <FormControl variant="standard" fullWidth sx={{marginTop: '8px'}}>
           <InputLabel shrink={true} htmlFor="location">Location</InputLabel>
           <Select
@@ -95,9 +127,13 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
             onChange={(e => {setDialogLocation(e.target.value as string)})}
           >
             {
-              locations.map((location, index) => (
-                <option key={index} value={location.code}>{location.name}</option>
-              ))
+              !dialogIsCustomLocation
+              ? locations.map((location, index) => (
+                  <option key={index} value={location.code}>{location.name}</option>
+                ))
+              : customLocations.map((location, index) => (
+                  <option key={index} value={location.code}>{location.name}</option>
+                ))
             }
           </Select>
         </FormControl>
@@ -189,6 +225,7 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
           dialogIndicatorPerMillion,
           dialogIndicatorAverage7Days,
           dialogIndicatorAverage14Days,
+          dialogIsCustomLocation,
           dialogLocation,
           dialogChartType,
           dialogColor,

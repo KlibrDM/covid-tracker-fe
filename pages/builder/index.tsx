@@ -35,6 +35,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BuilderLoadDialog from './components/load-dialog';
 import { saveCustomChart, updateCustomChart } from '../../lib/custom-chart.service';
+import { getCustomLocation } from '../../lib/custom-location.service';
 
 Chart.register(CategoryScale);
 
@@ -114,6 +115,7 @@ const Builder: NextPage = (props: any) => {
     const chartValue: IChartValue = {
       indicator: newIndicator,
       location_code: data.dialogLocation,
+      is_custom_location: data.dialogIsCustomLocation,
       chart_type: data.dialogChartType,
       color: data.dialogColor,
       fill: data.dialogChartType === "area" ? {
@@ -139,7 +141,7 @@ const Builder: NextPage = (props: any) => {
 
     for(let i = 0; i < chipData.length; i++){
       const e = chipData[i];
-      const data: IData[] = await getData(e.location_code, e.indicator.key, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'));
+      const data: IData[] = await getData(e.location_code, e.indicator.key, startDate.format('YYYY-MM-DD'), endDate.format('YYYY-MM-DD'), e.is_custom_location);
       const dataset: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]> = {
         type: e.chart_type === 'area' ? 'line' : e.chart_type,
         label: e.location_code + ' - ' + e.indicator.label,
@@ -153,7 +155,9 @@ const Builder: NextPage = (props: any) => {
       };
 
       const perNumber = 1000000;
-      const population = locations.find(elem => elem.code === e.location_code)?.population ?? perNumber;
+      const population = !e.is_custom_location
+        ? locations.find(elem => elem.code === e.location_code)?.population ?? perNumber
+        : await getCustomLocation(e.location_code, user.token).then(res => res.population ?? perNumber);
 
       //if key is not a 'new' value, fill empty spaces with last data
       let lastData = 0;
@@ -464,6 +468,7 @@ const Builder: NextPage = (props: any) => {
 
       <BuilderDialog
         ref={indicatorDialogRef}
+        user={user}
         location={location}
         locations={locations}
         handleIndicatorClose={handleIndicatorClose}

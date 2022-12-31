@@ -21,6 +21,7 @@ export interface IIndicatorSettings {
 export interface IChartValue {
   indicator: IIndicatorSettings;
   location_code: string;
+  is_custom_location?: boolean;
   chart_type: "area" | "line" | "bar";
   color: string;
   fill?: IChartAreaFill;
