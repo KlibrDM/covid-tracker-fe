@@ -10,29 +10,43 @@ import { Chart as ChartJS } from "react-chartjs-2";
 import Chart from "chart.js/auto";
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
+import SaveIcon from '@mui/icons-material/Save';
+import CloseIcon from '@mui/icons-material/Close';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RunDialog from './components/run-dialog';
 import { ISimulation, ISimulationQuery } from '../../models/simulation';
-import { runSimulation } from '../../lib/simulation.service';
+import { deleteSimulation, getSimulationsPersonal, getSimulationsPublic, runSimulation, saveSimulation, updateSimulation } from '../../lib/simulation.service';
 import moment from 'moment';
 import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
 import { CASES_COLOR, CASES_FILL_COLORS, DEATHS_COLOR, DEATHS_FILL_COLORS } from '../../lib/constants';
 import { isChartEmpty } from '../../utils/isChartEmpty';
-import { CircularProgress } from '@mui/material';
+import { Card, CardContent, CircularProgress, IconButton } from '@mui/material';
 import { SIMULATION_DATASETS } from '../../lib/simulation-datasets';
+import TextField from '@mui/material/TextField';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Switch from '@mui/material/Switch';
 
 Chart.register(CategoryScale);
 
 const Simulation: NextPage = (props: any) => {
-  const user = props.user;
+  const user = props.user || {};
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
   const locationName = locations.find(e => e.code === location)?.name;
+
+  const [publicSims, setPublicSims] = useState<(ISimulation & { _id: string })[]>([]);
+  const [personalSims, setPersonalSims] = useState<(ISimulation & { _id: string })[]>([]);
 
   const [isRunDialogOpen, setIsRunDialogOpen] = useState<boolean>(false);
   const runDialogRef = useRef(null);
 
   const [chartReady, setChartReady] = useState<boolean>(false);
-  const [simData, setSimData] = useState<ISimulation>();
+  const [simData, setSimData] = useState<(ISimulation & { _id?: string })>();
+  const [simName, setSimName] = useState<string>("New simulation");
+  const [simIsPublic, setSimIsPublic] = useState<boolean>(false);
+  const [simIsSaved, setSimIsSaved] = useState<boolean>(true);
   const [newCasesChart, setNewCasesChart] = useState<ChartConfiguration>();
   const [totalCasesChart, setTotalCasesChart] = useState<ChartConfiguration>();
   const [newDeathsChart, setNewDeathsChart] = useState<ChartConfiguration>();
@@ -57,7 +71,7 @@ const Simulation: NextPage = (props: any) => {
 
   const handleDialogRun = async (data: any) => {
     const payload: ISimulationQuery = {
-      ownerId: user.id,
+      ownerId: user._id,
       location_code: data.dialogLocation,
       start_date: new Date(),
       dataset_location_codes: SIMULATION_DATASETS.get(data.dialogDatasets) || [data.dialogLocation],
@@ -69,14 +83,48 @@ const Simulation: NextPage = (props: any) => {
       ],
     }
 
-    await runSimulation(payload, user.token).then(res => {     
+    await runSimulation(payload, user.token).then(res => {
       loadCharts(res);
     });
 
+    setSimIsSaved(false);
     setIsRunDialogOpen(false);
     //@ts-ignore
     runDialogRef.current.updateDialogState(false);
   };
+
+  const handleSave = async () => {
+    simData!.name = simName;
+    simData!.is_public = simIsPublic;
+
+    await saveSimulation(simData!, user.token).then(res => {
+      setSimIsSaved(true);
+      simData!._id = res._id;
+    });
+  };
+
+  const handleModify = async () => {
+    simData!.name = simName;
+    simData!.is_public = simIsPublic;
+
+    await updateSimulation(simData!, simData!._id!, user.token).then(res => {
+      setSimIsSaved(true);
+    });
+  };
+
+  const handleSimDelete = async (id: string) => {
+    await deleteSimulation(id, user.token).then(res => {
+      personalSims.splice(personalSims.findIndex(e => e._id === id), 1);
+      setPersonalSims([...personalSims]);
+      publicSims.splice(publicSims.findIndex(e => e._id === id), 1);
+      setPublicSims([...publicSims]);
+    });
+  };
+
+  const handleSimClose = async () => {
+    setSimData(undefined);
+    getSims();
+  }
 
   const loadCharts = (data: ISimulation) => {
     const chartLabels = data.new_cases.map((e, i) => moment(data.start_date).add(i, 'days').format('YYYY-MM-DD'));
@@ -170,6 +218,8 @@ const Simulation: NextPage = (props: any) => {
     setTotalDeathsChart(totalDeathsChartConfiguration);
 
     setSimData(data);
+    setSimName(data.name);
+    setSimIsPublic(data.is_public);
   }
 
   useEffect(() => {
@@ -178,6 +228,18 @@ const Simulation: NextPage = (props: any) => {
       Chart.register(zoomPlugin);
       setChartReady(true);
     } loadZoom();
+  }, []);
+
+  const getSims = async () => {
+    const resPersonal = user.token ? await getSimulationsPersonal(user.token) : [];
+    const resPublic = await getSimulationsPublic();
+
+    setPersonalSims(resPersonal);
+    setPublicSims(resPublic);
+  };
+
+  useEffect(() => {
+    getSims();
   }, []);
 
   return (
@@ -201,12 +263,113 @@ const Simulation: NextPage = (props: any) => {
                 Run new simulation
               </Button>
             </div>
+            <div className={styles.sim_cards_container}>
+              {
+                publicSims.length > 0 &&
+                <div className={styles.sim_card_full_container}>
+                  <h2>Public simulations</h2>
+                  <div className={styles.sim_card_container}>
+                    {publicSims.map((sim, i) => (
+                      <Card
+                        key={i}
+                        className={styles.sim_card}
+                        onClick={() => { setSimIsSaved(true); loadCharts(sim); }}
+                      >
+                        <CardContent className={styles.sim_card_content}>
+                          <h4>{sim.name}</h4>
+                          <p>Location: {sim.location_code}</p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              }
+              {
+                personalSims.length > 0 &&
+                <div className={styles.sim_card_full_container}>
+                  <h2>Personal simulations</h2>
+                  <div className={styles.sim_card_container}>
+                    {personalSims.map((sim, i) => (
+                      <Card
+                        key={i}
+                        className={styles.sim_card}
+                        onClick={() => { setSimIsSaved(true); loadCharts(sim) }}
+                      >
+                        <CardContent className={styles.sim_card_content}>
+                          <h4>{sim.name}</h4>
+                          <p>Location: {sim.location_code}</p>
+                        </CardContent>
+                        <div className={styles.sim_card_actions}>
+                          <IconButton
+                            size='small'
+                            onClick={event => {
+                              event.stopPropagation();
+                              handleSimDelete(sim._id);
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              }
+            </div>
           </>
           :
           <>
-            <h1>{simData.name}</h1>
-            <h2>{locations.find(e => e.code === simData.location_code)?.name}</h2>
-            <div>
+            <h2>Simulation for {locations.find(e => e.code === simData.location_code)?.name}</h2>
+            <div style={{display: 'flex', alignItems: 'center'}}>
+              <TextField
+                fullWidth
+                label="Simulation Name"
+                variant="standard"
+                size='small'
+                inputProps={{ maxLength: 120 }}
+                value={simName}
+                onChange={(e) => {
+                  setSimName(e.target.value);
+                  setSimIsSaved(false);
+                }}
+                sx={{ marginBottom: 1 }}
+              />
+              <FormGroup>
+                <FormControlLabel control={
+                  <Switch checked={simIsPublic} onChange={(e) => {
+                    setSimIsPublic(e.target.checked);
+                    setSimIsSaved(false);
+                  }} />
+                } label="Public" labelPlacement="start" />
+              </FormGroup>
+            </div>
+            <div style={{display: 'flex', gap: 10}}>
+              {
+                simData._id && user._id && simData.ownerId === user._id &&
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color='success'
+                  endIcon={<AutoFixHighIcon />}
+                  onClick={handleModify}
+                  disabled={simIsSaved || simName === '' || !user}
+                >
+                  Modify simulation
+                </Button>
+              }
+              {
+                !simData._id && user._id && simData.ownerId === user._id &&
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color='success'
+                  endIcon={<SaveIcon />}
+                  onClick={handleSave}
+                  disabled={simIsSaved || simName === '' || !user}
+                >
+                  Save simulation
+                </Button>
+              }
               <Button
                 size="small"
                 variant="outlined"
@@ -214,6 +377,15 @@ const Simulation: NextPage = (props: any) => {
                 onClick={handleNewSimulationClickOpen}
               >
                 Run new simulation
+              </Button>
+              <Button
+                size="small"
+                variant="outlined"
+                color='error'
+                endIcon={<CloseIcon />}
+                onClick={handleSimClose}
+              >
+                Close simulation
               </Button>
             </div>
 
@@ -280,7 +452,6 @@ const Simulation: NextPage = (props: any) => {
             </div>
           </>
         }
-        
       </section>
 
       <RunDialog
