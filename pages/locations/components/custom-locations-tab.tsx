@@ -6,7 +6,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, CircularProg
 import { DataGrid, GridColDef, GridToolbarColumnsButton, GridToolbarFilterButton, GridToolbarContainer, GridToolbarContainerProps, GridToolbarExportContainer, GridCsvExportMenuItem, GridCsvExportOptions, GridExportMenuItemProps, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { ButtonProps } from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
-import { IData } from '../../../models/data';
+import { IData, INDICATOR_LABELS } from '../../../models/data';
 import { getData } from '../../../lib/data.service';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -80,7 +80,7 @@ const CustomLocationsTab = (props: any) => {
         extractKeysFromData(data).forEach((key: string) => {
           columns.push({
             field: key,
-            headerName: key,
+            headerName: INDICATOR_LABELS.get(key) || key,
             type: key === 'date' ? 'date' : 'number',
             width: key === 'date' ? 110 : key.length * 6.5 + 40
           });

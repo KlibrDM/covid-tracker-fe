@@ -24,3 +24,28 @@ export interface IData {
   excess_mortality?: number;
   excess_mortality_cumulative?: number;
 }
+
+export const INDICATOR_LABELS: Map<string, string> = new Map([
+  ['date', 'Date'],
+  ['total_cases', 'Total Cases'],
+  ['new_cases', 'New Cases'],
+  ['total_deaths', 'Total Deaths'],
+  ['new_deaths', 'New Deaths'],
+  ['reproduction_rate', 'Reproduction Rate'],
+  ['icu_patients', 'ICU Patients'],
+  ['hosp_patients', 'Hospital Patients'],
+  ['weekly_icu_admissions', 'Weekly ICU Admissions'],
+  ['weekly_hosp_admissions', 'Weekly Hospital Admissions'],
+  ['total_tests', 'Total Tests'],
+  ['new_tests', 'New Tests'],
+  ['positive_rate', 'Positive Rate'],
+  ['test_units', 'Test Units'],
+  ['total_vaccinations', 'Total Vaccinations'],
+  ['people_vaccinated', 'People Vaccinated'],
+  ['people_fully_vaccinated', 'People Fully Vaccinated'],
+  ['total_boosters', 'Total Boosters'],
+  ['new_vaccinations', 'New Vaccinations'],
+  ['stringency_index', 'Stringency Index'],
+  ['excess_mortality', 'Excess Mortality'],
+  ['excess_mortality_cumulative', 'Excess Mortality Cumulative'],
+]);
