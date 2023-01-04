@@ -277,7 +277,11 @@ const Simulation: NextPage = (props: any) => {
                       >
                         <CardContent className={styles.sim_card_content}>
                           <h4>{sim.name}</h4>
-                          <p>Location: {sim.location_code}</p>
+                          <p>Location: {locations.find(e => e.code === sim.location_code)?.name || sim.location_code}</p>
+                          <p>{sim.simulation_parameters.find(e => e.key === 'simulation_days')
+                              ? sim.simulation_parameters.find(e => e.key === 'simulation_days')?.value + ' days from ' + moment(sim.start_date).format('YYYY-MM-DD')
+                              : 'Starting from ' + moment(sim.start_date).format('YYYY-MM-DD')
+                          }</p>
                         </CardContent>
                       </Card>
                     ))}
@@ -297,7 +301,11 @@ const Simulation: NextPage = (props: any) => {
                       >
                         <CardContent className={styles.sim_card_content}>
                           <h4>{sim.name}</h4>
-                          <p>Location: {sim.location_code}</p>
+                          <p>Location: {locations.find(e => e.code === sim.location_code)?.name || sim.location_code}</p>
+                          <p>{sim.simulation_parameters.find(e => e.key === 'simulation_days')
+                              ? sim.simulation_parameters.find(e => e.key === 'simulation_days')?.value + ' days from ' + moment(sim.start_date).format('YYYY-MM-DD')
+                              : 'Starting from ' + moment(sim.start_date).format('YYYY-MM-DD')
+                          }</p>
                         </CardContent>
                         <div className={styles.sim_card_actions}>
                           <IconButton
