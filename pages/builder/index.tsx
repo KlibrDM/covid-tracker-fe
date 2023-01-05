@@ -44,7 +44,7 @@ const ListItem = styled('li')(({ theme }) => ({
 }));
 
 const Builder: NextPage = (props: any) => {
-  const user = props.user;
+  const user = props.user || {};
   const [chartReady, setChartReady] = useState<boolean>(false);
 
   const [location, setLocation] = useState(props.location as string);

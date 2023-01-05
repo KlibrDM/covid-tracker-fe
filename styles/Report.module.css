@@ -1,0 +1,97 @@
+.page_container {
+  display: flex;
+  flex-direction: column;
+  padding: 0 1em;
+  height: 100vh;
+  overflow: auto;
+}
+
+.single_chart_section {
+  display: flex;
+  flex-grow: 1;
+  min-height: 300px;
+}
+
+.single_chart_section > p {
+  margin-block-end: 0.2em;
+}
+
+.chart_container {
+  position: relative;
+  flex-grow: 1;
+}
+
+.chart_actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-left: 15px;
+}
+
+.action_buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.report_cards_container {
+  display: flex;
+  gap: 20px;
+}
+
+.report_card_full_container {
+  flex-grow: 1;
+  flex-basis: 50%;
+}
+
+.report_card_container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.report_card {
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.report_card_content {
+  padding: 8px 16px !important;
+}
+
+.report_card_content > p {
+  margin-block-start: 0.4em;
+  margin-block-end: 0.4em;
+}
+
+.report_card:hover {
+  transform: scale(1.03);
+}
+
+.report_card_actions {
+  align-self: center;
+  margin-right: 10px;
+}
+
+.report_charts_container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.report_add_chart_button {
+  width: 100%;
+  height: 100px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.spinner_container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 150px;
+}
