@@ -10,6 +10,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import { ChartType, ChartTypes, Indicators } from '../../../models/custom-chart';
 import { getCustomLocationsPersonal, getCustomLocationsPublic } from '../../../lib/custom-location.service';
 import { ICustomLocation } from '../../../models/custom-location';
+import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../../lib/constants';
 
 const BuilderDialog = forwardRef((props: any, ref: any) => {
   const user = props.user || {};
@@ -46,8 +47,8 @@ const BuilderDialog = forwardRef((props: any, ref: any) => {
   }
 
   const getCustomLocations = async () => {
-    const resPersonal = user.token ? await getCustomLocationsPersonal(user.token) : [];
-    const resPublic = await getCustomLocationsPublic();
+    const resPersonal = user.token ? await getCustomLocationsPersonal(user.token, MAX_RESULTS_LIMIT) : [];
+    const resPublic = await getCustomLocationsPublic(RESULTS_LIMIT);
 
     //Use a map to have unique locations
     const resMap = new Map<string, ICustomLocation>();

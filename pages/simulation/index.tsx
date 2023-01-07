@@ -19,7 +19,7 @@ import { ISimulation, ISimulationQuery } from '../../models/simulation';
 import { deleteSimulation, getSimulationsPersonal, getSimulationsPublic, runSimulation, saveSimulation, updateSimulation } from '../../lib/simulation.service';
 import moment from 'moment';
 import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
-import { CASES_COLOR, CASES_FILL_COLORS, DEATHS_COLOR, DEATHS_FILL_COLORS } from '../../lib/constants';
+import { CASES_COLOR, CASES_FILL_COLORS, DEATHS_COLOR, DEATHS_FILL_COLORS, MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../lib/constants';
 import { isChartEmpty } from '../../utils/isChartEmpty';
 import { Card, CardContent, CircularProgress, IconButton } from '@mui/material';
 import { SIMULATION_DATASETS } from '../../lib/simulation-datasets';
@@ -231,8 +231,8 @@ const Simulation: NextPage = (props: any) => {
   }, []);
 
   const getSims = async () => {
-    const resPersonal = user.token ? await getSimulationsPersonal(user.token) : [];
-    const resPublic = await getSimulationsPublic();
+    const resPersonal = user.token ? await getSimulationsPersonal(user.token, MAX_RESULTS_LIMIT) : [];
+    const resPublic = await getSimulationsPublic(RESULTS_LIMIT);
 
     setPersonalSims(resPersonal);
     setPublicSims(resPublic);

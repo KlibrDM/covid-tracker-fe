@@ -1,7 +1,9 @@
 import { IChart } from "../models/custom-chart";
+import { MAX_RESULTS_LIMIT } from "./constants";
 
-export async function getChartsPersonal(token: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}charts/`, {
+export async function getChartsPersonal(token: string, limit?: number) {
+  const reqLimit = limit ? limit : MAX_RESULTS_LIMIT;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}charts?limit=${reqLimit}`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -11,8 +13,9 @@ export async function getChartsPersonal(token: string) {
   return data;
 }
 
-export async function getChartsPublic() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}charts/get-public`);
+export async function getChartsPublic(limit?: number) {
+  const reqLimit = limit ? limit : MAX_RESULTS_LIMIT;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}charts/get-public?limit=${reqLimit}`);
   const data = await res.json();
 
   return data;

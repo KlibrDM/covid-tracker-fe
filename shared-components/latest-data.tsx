@@ -4,6 +4,7 @@ import { IData } from '../models/data';
 import { ILocation } from '../models/location';
 import styles from '../styles/Latest-Data.module.css';
 import { getCustomLocationsPersonal, getCustomLocationsPublic } from '../lib/custom-location.service';
+import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../lib/constants';
 
 const sortTypes = {
   NameAscending: 'Name ascending',
@@ -138,10 +139,10 @@ const LatestData = (props: any) => {
 
   const switchCustom = async () => {
     if(!showCustom){
-      const publicLocations = await getCustomLocationsPublic();
+      const publicLocations = await getCustomLocationsPublic(RESULTS_LIMIT);
       setCustomPublicLocations(publicLocations);
       if(user.token){
-        const personalLocations = await getCustomLocationsPersonal(user.token);
+        const personalLocations = await getCustomLocationsPersonal(user.token, MAX_RESULTS_LIMIT);
         setCustomPersonalLocations(personalLocations);
       }
     }

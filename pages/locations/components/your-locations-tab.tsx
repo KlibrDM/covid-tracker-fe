@@ -26,6 +26,7 @@ import PublishIcon from '@mui/icons-material/Publish';
 import YourLocationsAddData from './your-locations-add-data';
 import { deleteCustomLocation, getCustomLocationsPersonal, saveCustomLocation, updateCustomLocation } from '../../../lib/custom-location.service';
 import { deleteCustomlocationData, updateCustomLocationData } from '../../../lib/custom-location-data.service';
+import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../../lib/constants';
 
 const YourLocationsTab = (props: any) => {
   const user = props.user || {};
@@ -237,7 +238,7 @@ const YourLocationsTab = (props: any) => {
   //Load locations
   useEffect(() => {
     const loadLocations = async () => {
-      const locations = await getCustomLocationsPersonal(user.token);
+      const locations = await getCustomLocationsPersonal(user.token, MAX_RESULTS_LIMIT);
       setLocations(locations);
       setLocationsLoaded(true);
     };
@@ -248,7 +249,7 @@ const YourLocationsTab = (props: any) => {
   useEffect(() => {
     if(isSaved){
       const loadLocations = async () => {
-        const locations = await getCustomLocationsPersonal(user.token);
+        const locations = await getCustomLocationsPersonal(user.token, MAX_RESULTS_LIMIT);
         setLocations(locations);
       };
       loadLocations();

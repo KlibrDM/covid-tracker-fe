@@ -9,6 +9,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { IChart } from '../../../models/custom-chart';
 import { deleteChart, getChartsPersonal, getChartsPublic } from '../../../lib/custom-chart.service';
+import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../../lib/constants';
 
 const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
   const user = props.user || {};
@@ -31,13 +32,13 @@ const BuilderLoadDialog = forwardRef((props: any, ref: any) => {
 
   useEffect(() => {
     async function loadPublicCharts() {
-      const data = await getChartsPublic();
+      const data = await getChartsPublic(RESULTS_LIMIT);
       setPublicCharts(data);
       setPublicLoaded(true);
     }
 
     async function loadPersonalCharts() {
-      const data = await getChartsPersonal(user.token);
+      const data = await getChartsPersonal(user.token, MAX_RESULTS_LIMIT);
       setPersonalCharts(data);
       setPersonalLoaded(true);
     }

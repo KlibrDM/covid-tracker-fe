@@ -8,6 +8,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import { getChartsPersonal, getChartsPublic } from '../../../lib/custom-chart.service';
 import { IChart } from '../../../models/custom-chart';
+import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../../lib/constants';
 
 const AddDialog = forwardRef((props: any, ref: any) => {
   const user = props.user || {};
@@ -43,13 +44,13 @@ const AddDialog = forwardRef((props: any, ref: any) => {
   }
 
   const loadPublicCharts = async () => {
-    const data = await getChartsPublic();
+    const data = await getChartsPublic(RESULTS_LIMIT);
     setPublicCharts(data);
     setPublicLoaded(true);
   }
 
   const loadPersonalCharts = async () => {
-    const data = await getChartsPersonal(user.token);
+    const data = await getChartsPersonal(user.token, MAX_RESULTS_LIMIT);
     setPersonalCharts(data);
     setPersonalLoaded(true);
   }

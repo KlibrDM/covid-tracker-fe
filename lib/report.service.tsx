@@ -1,7 +1,9 @@
 import { IReport } from "../models/report";
+import { MAX_RESULTS_LIMIT } from "./constants";
 
-export async function getReportsPersonal(token: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}reports/`, {
+export async function getReportsPersonal(token: string, limit?: number) {
+  const reqLimit = limit ? limit : MAX_RESULTS_LIMIT;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}reports?limit=${reqLimit}`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -11,8 +13,9 @@ export async function getReportsPersonal(token: string) {
   return data;
 }
 
-export async function getReportsPublic() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}reports/get-public`);
+export async function getReportsPublic(limit?: number) {
+  const reqLimit = limit ? limit : MAX_RESULTS_LIMIT;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}reports/get-public?limit=${reqLimit}`);
   const data = await res.json();
 
   return data;

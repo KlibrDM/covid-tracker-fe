@@ -10,6 +10,9 @@ export const DEFAULT_START_DATES = [
   {date: moment().subtract(1, 'week').format('YYYY-MM-DD'), label: '1W'},
 ];
 
+export const RESULTS_LIMIT = 100;
+export const MAX_RESULTS_LIMIT = 1000;
+
 export const DEFAULT_CHART_TYPES: IChartType[] = [{
   value: 'area',
   label: 'Area',

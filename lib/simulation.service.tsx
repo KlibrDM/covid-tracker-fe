@@ -1,4 +1,5 @@
 import { ISimulation, ISimulationQuery } from "../models/simulation";
+import { MAX_RESULTS_LIMIT } from "./constants";
 
 export async function runSimulation(payload: ISimulationQuery, token: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation`, {
@@ -15,8 +16,9 @@ export async function runSimulation(payload: ISimulationQuery, token: string) {
   return data ? data : status;
 }
 
-export async function getSimulationsPersonal(token: string) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation/`, {
+export async function getSimulationsPersonal(token: string, limit?: number) {
+  const reqLimit = limit ? limit : MAX_RESULTS_LIMIT;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation?limit=${reqLimit}`, {
     headers: {
       'Authorization': `Bearer ${token}`
     }
@@ -26,8 +28,9 @@ export async function getSimulationsPersonal(token: string) {
   return data;
 }
 
-export async function getSimulationsPublic() {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation/get-public`);
+export async function getSimulationsPublic(limit?: number) {
+  const reqLimit = limit ? limit : MAX_RESULTS_LIMIT;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation/get-public?limit=${reqLimit}`);
   const data = await res.json();
 
   return data;

@@ -18,6 +18,7 @@ import Paper from '@mui/material/Paper';
 import moment from 'moment';
 import { ICustomLocation } from '../../../models/custom-location';
 import { getCustomLocationsPublic } from '../../../lib/custom-location.service';
+import { RESULTS_LIMIT } from '../../../lib/constants';
 
 const CustomLocationsTab = (props: any) => {
   const [locations, setLocations] = useState<ICustomLocation[]>([]);
@@ -43,7 +44,7 @@ const CustomLocationsTab = (props: any) => {
   //Load locations
   useEffect(() => {
     const loadLocations = async () => {
-      const locations = await getCustomLocationsPublic();
+      const locations = await getCustomLocationsPublic(RESULTS_LIMIT);
       setLocations(locations);
       setLocationsLoaded(true);
     };

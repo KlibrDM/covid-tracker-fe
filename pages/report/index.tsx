@@ -32,6 +32,7 @@ import { getData } from '../../lib/data.service';
 import { getCustomLocation } from '../../lib/custom-location.service';
 import { sevenDayAverage } from '../../utils/calculate-7-day-average';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
+import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../lib/constants';
 
 Chart.register(CategoryScale);
 
@@ -272,8 +273,8 @@ const Report: NextPage = (props: any) => {
   }, []);
 
   const getReports = async () => {
-    const resPersonal = user.token ? await getReportsPersonal(user.token) : [];
-    const resPublic = await getReportsPublic();
+    const resPersonal = user.token ? await getReportsPersonal(user.token, MAX_RESULTS_LIMIT) : [];
+    const resPublic = await getReportsPublic(RESULTS_LIMIT);
 
     setPersonalReports(resPersonal);
     setPublicReports(resPublic);
