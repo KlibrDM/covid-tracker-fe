@@ -12,6 +12,7 @@ export const DEFAULT_START_DATES = [
 
 export const RESULTS_LIMIT = 100;
 export const MAX_RESULTS_LIMIT = 1000;
+export const HOME_RESULTS_LIMIT = 10;
 
 export const DEFAULT_CHART_TYPES: IChartType[] = [{
   value: 'area',

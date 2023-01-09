@@ -121,3 +121,18 @@ export const COMMON_PERCENTAGE_CHART_OPTIONS: _DeepPartialObject<CoreChartOption
     }
   },
 }
+
+export const HOME_CHART_OPTIONS: _DeepPartialObject<CoreChartOptions<keyof ChartTypeRegistry> & ElementChartOptions<keyof ChartTypeRegistry> & PluginChartOptions<keyof ChartTypeRegistry> & DatasetChartOptions<keyof ChartTypeRegistry> & ScaleChartOptions<keyof ChartTypeRegistry>> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    intersect: false,
+    mode: 'index',
+  },
+  plugins: {
+    legend: {
+      position: 'bottom',
+      reverse: true
+    }
+  },
+}
