@@ -32,6 +32,17 @@ export async function getCustomLocation(code: string, token: string) {
   return data;
 }
 
+export async function getCustomLocationById(id: string, token: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations/get-by-id/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  const data = await res.json();
+
+  return data;
+}
+
 export async function deleteCustomLocation(code: string, token: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}custom-locations/${code}`, {
       method: 'DELETE',

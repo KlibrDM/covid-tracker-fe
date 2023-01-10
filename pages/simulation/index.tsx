@@ -16,7 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RunDialog from './components/run-dialog';
 import { ISimulation, ISimulationQuery } from '../../models/simulation';
-import { deleteSimulation, getSimulationsPersonal, getSimulationsPublic, runSimulation, saveSimulation, updateSimulation } from '../../lib/simulation.service';
+import { deleteSimulation, getSimulation, getSimulationsPersonal, getSimulationsPublic, runSimulation, saveSimulation, updateSimulation } from '../../lib/simulation.service';
 import moment from 'moment';
 import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
 import { CASES_COLOR, CASES_FILL_COLORS, DEATHS_COLOR, DEATHS_FILL_COLORS, MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../lib/constants';
@@ -27,10 +27,15 @@ import TextField from '@mui/material/TextField';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import { useRouter } from 'next/router';
 
 Chart.register(CategoryScale);
 
 const Simulation: NextPage = (props: any) => {
+  const router = useRouter();
+  const { id } = router.query;
+  const loadId = id as string;
+
   const user = props.user || {};
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
@@ -239,7 +244,21 @@ const Simulation: NextPage = (props: any) => {
   };
 
   useEffect(() => {
-    getSims();
+    if (!loadId) {
+      getSims();
+    }
+    else {
+      getSimulation(loadId, user.token || '').then(res => {
+        if (res && !res.message) {
+          loadCharts(res);
+        }
+        else {
+          getSims();
+        }
+      }, err => {
+        getSims();
+      });
+    }
   }, []);
 
   return (

@@ -17,10 +17,17 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import moment from 'moment';
 import { ICustomLocation } from '../../../models/custom-location';
-import { getCustomLocationsPublic } from '../../../lib/custom-location.service';
+import { getCustomLocationById, getCustomLocationsPublic } from '../../../lib/custom-location.service';
 import { RESULTS_LIMIT } from '../../../lib/constants';
+import { useRouter } from 'next/router';
 
 const CustomLocationsTab = (props: any) => {
+  const router = useRouter();
+  const { id } = router.query;
+  const loadId = id as string;
+
+  const user = props.user || {};
+
   const [locations, setLocations] = useState<ICustomLocation[]>([]);
   const [locationsLoaded, setLocationsLoaded] = useState(false);
 
@@ -34,6 +41,9 @@ const CustomLocationsTab = (props: any) => {
 
   const handleDataDialogClose = () => {
     setIsDataDialogOpen(false);
+
+    //Remove loadId from url
+    router.replace('/locations', undefined, {shallow: true});
   };
 
   const handleDataDialogOpen = (location: ICustomLocation) => {
@@ -49,6 +59,14 @@ const CustomLocationsTab = (props: any) => {
       setLocationsLoaded(true);
     };
     loadLocations();
+
+    if (loadId) {
+      getCustomLocationById(loadId, user.token || '').then(res => {
+        if (res && !res.message) {
+          handleDataDialogOpen(res);
+        }
+      });
+    }
   }, []);
 
   //When user clicks on a new location get data

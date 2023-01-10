@@ -36,6 +36,17 @@ export async function getSimulationsPublic(limit?: number) {
   return data;
 }
 
+export async function getSimulation(id: string, token: string) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation/${id}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  const data = await res.json();
+
+  return data;
+}
+
 export async function deleteSimulation(id: string, token: string) {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}simulation/${id}`, {
       method: 'DELETE',

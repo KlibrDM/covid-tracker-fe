@@ -24,7 +24,7 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { IReport, IReportChart } from '../../models/report';
-import { deleteReport, getReportsPersonal, getReportsPublic, saveReport, updateReport } from '../../lib/report.service';
+import { deleteReport, getReport, getReportsPersonal, getReportsPublic, saveReport, updateReport } from '../../lib/report.service';
 import AddDialog from './components/add-dialog';
 import { IChart } from '../../models/custom-chart';
 import { IData } from '../../models/data';
@@ -33,10 +33,15 @@ import { getCustomLocation } from '../../lib/custom-location.service';
 import { sevenDayAverage } from '../../utils/calculate-7-day-average';
 import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
 import { MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../lib/constants';
+import { useRouter } from 'next/router';
 
 Chart.register(CategoryScale);
 
 const Report: NextPage = (props: any) => {
+  const router = useRouter();
+  const { id } = router.query;
+  const loadId = id as string;
+
   const user = props.user || {};
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
@@ -169,11 +174,11 @@ const Report: NextPage = (props: any) => {
   };
 
   const buildAllCharts = async (data: IReport) => {
-    charts.splice(0, charts.length);
+    const chartSet = [];
     for(let i = 0; i < data.charts.length; i++){
-      charts.push(await buildChart(data.charts[i]));
+      chartSet.push(await buildChart(data.charts[i]));
     }
-    setCharts([...charts]);
+    setCharts(chartSet);
     setChartsDataReady(true);
   }
 
@@ -281,7 +286,21 @@ const Report: NextPage = (props: any) => {
   };
 
   useEffect(() => {
-    getReports();
+    if (!loadId) {
+      getReports();
+    }
+    else {
+      getReport(loadId, user.token || '').then(res => {
+        if (res && !res.message) {
+          loadReport(res);
+        }
+        else {
+          getReports();
+        }
+      }, err => {
+        getReports();
+      });
+    }
   }, []);
 
   return (

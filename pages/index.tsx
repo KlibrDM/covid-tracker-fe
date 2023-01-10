@@ -159,7 +159,7 @@ const Home: NextPage = (props: any) => {
             <h3>Charts</h3>
             <PersonalCard
               user={user}
-              link={"/builder/"}
+              link={"/builder"}
               public={publicCharts}
               personal={personalCharts}
             ></PersonalCard>
@@ -168,7 +168,7 @@ const Home: NextPage = (props: any) => {
             <h3>Reports</h3>
             <PersonalCard
               user={user}
-              link={"/report/"}
+              link={"/report"}
               public={publicReports}
               personal={personalReports}
             ></PersonalCard>
@@ -177,7 +177,7 @@ const Home: NextPage = (props: any) => {
             <h3>Simulations</h3>
             <PersonalCard
               user={user}
-              link={"/simulation/"}
+              link={"/simulation"}
               public={publicSimulations}
               personal={personalSimulations}
             ></PersonalCard>
@@ -186,7 +186,7 @@ const Home: NextPage = (props: any) => {
             <h3>Locations</h3>
             <PersonalCard
               user={user}
-              link={"/locations/"}
+              link={"/locations"}
               public={publicLocations}
               personal={personalLocations}
             ></PersonalCard>

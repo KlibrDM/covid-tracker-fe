@@ -34,8 +34,9 @@ import UploadIcon from '@mui/icons-material/Upload';
 import SaveIcon from '@mui/icons-material/Save';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import BuilderLoadDialog from './components/load-dialog';
-import { saveCustomChart, updateCustomChart } from '../../lib/custom-chart.service';
+import { getChart, saveCustomChart, updateCustomChart } from '../../lib/custom-chart.service';
 import { getCustomLocation } from '../../lib/custom-location.service';
+import { useRouter } from 'next/router';
 
 Chart.register(CategoryScale);
 
@@ -44,6 +45,10 @@ const ListItem = styled('li')(({ theme }) => ({
 }));
 
 const Builder: NextPage = (props: any) => {
+  const router = useRouter();
+  const { id } = router.query;
+  const loadId = id as string;
+
   const user = props.user || {};
   const [chartReady, setChartReady] = useState<boolean>(false);
 
@@ -317,6 +322,16 @@ const Builder: NextPage = (props: any) => {
       Chart.register(zoomPlugin);
       setChartReady(true);
     } loadZoom();
+  }, []);
+
+  useEffect(() => {
+    if (loadId) {
+      getChart(loadId, user.token || '').then(res => {
+        if (res && !res.message) {
+          handleLoadChart(res);
+        }
+      });
+    }
   }, []);
 
   return (

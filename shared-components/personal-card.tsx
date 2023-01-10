@@ -41,7 +41,7 @@ const PersonalCard = (props: any) => {
           {
             publicArray.map((elem, i) => (
             <ListItem key={i} disablePadding>
-              <Link href={(link + elem._id)}>
+              <Link href={(link + '?id=' + elem._id)}>
                 <ListItemButton sx={{padding: 0}}>
                   <ListItemText primary={elem.name} />
                 </ListItemButton>
@@ -56,7 +56,7 @@ const PersonalCard = (props: any) => {
           {
             personalArray.map((elem, i) => (
             <ListItem key={i} disablePadding>
-              <Link href={(link + elem._id)}>
+              <Link href={(link + '?id=' + elem._id)}>
                 <ListItemButton sx={{padding: 0}}>
                   <ListItemText primary={elem.name} />
                 </ListItemButton>

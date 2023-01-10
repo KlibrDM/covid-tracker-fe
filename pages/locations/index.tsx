@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse, NextPage } from 'next'
 import Head from 'next/head'
 import Layout from '../../shared-components/layout'
 import styles from '../../styles/Locations.module.css'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { loadLocations } from '../../lib/location.service';
 import { ILocation } from '../../models/location';
 import Tabs from '@mui/material/Tabs';
@@ -11,6 +11,7 @@ import Box from '@mui/material/Box';
 import LocationsTab from './components/locations-tab';
 import CustomLocationsTab from './components/custom-locations-tab';
 import YourLocationsTab from './components/your-locations-tab';
+import { useRouter } from 'next/router';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -33,6 +34,10 @@ function TabPanel(props: TabPanelProps) {
 }
 
 const Locations: NextPage = (props: any) => {
+  const router = useRouter();
+  const { id } = router.query;
+  const loadId = id as string;
+
   const user = props.user;
   const [location, setLocation] = useState(props.location as string);
   const locations = props.locations as ILocation[];
@@ -43,6 +48,13 @@ const Locations: NextPage = (props: any) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
+
+  //Change to custom locations if there is a loadId
+  useEffect(() => {
+    if (loadId) {
+      setTabIndex(1);
+    }
+  }, []);
 
   return (
     <Layout>
@@ -66,7 +78,7 @@ const Locations: NextPage = (props: any) => {
           <LocationsTab location={location} locations={locations} />
         </TabPanel>
         <TabPanel value={tabIndex} index={1}>
-          <CustomLocationsTab />
+          <CustomLocationsTab user={user}/>
         </TabPanel>
         <TabPanel value={tabIndex} index={2}>
           <YourLocationsTab user={user}/>
