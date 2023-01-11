@@ -52,6 +52,8 @@ const YourLocationsTab = (props: any) => {
   const [newMedianAge, setNewMedianAge] = useState<number>();
   const [newAged65Older, setNewAged65Older] = useState<number>();
   const [newHospitalBedsPerThousand, setNewHospitalBedsPerThousand] = useState<number>();
+  const [newGDPPerCapita, setNewGDPPerCapita] = useState<number>();
+  const [newLifeExpectancy, setNewLifeExpectancy] = useState<number>();
   const [newIsPublic, setNewIsPublic] = useState(false);
   const [isSaved, setIsSaved] = useState<boolean>(true);
 
@@ -62,6 +64,8 @@ const YourLocationsTab = (props: any) => {
   const [editMedianAge, setEditMedianAge] = useState<number>();
   const [editAged65Older, setEditAged65Older] = useState<number>();
   const [editHospitalBedsPerThousand, setEditHospitalBedsPerThousand] = useState<number>();
+  const [editGDPPerCapita, setEditGDPPerCapita] = useState<number>();
+  const [editLifeExpectancy, setEditLifeExpectancy] = useState<number>();
   const [editIsPublic, setEditIsPublic] = useState(false);
   const [isEditSaved, setIsEditSaved] = useState<boolean>(true);
 
@@ -165,7 +169,9 @@ const YourLocationsTab = (props: any) => {
       population_density: newPopulationDensity,
       median_age: newMedianAge,
       aged_65_older: newAged65Older,
-      hospital_beds_per_thousand: newHospitalBedsPerThousand
+      hospital_beds_per_thousand: newHospitalBedsPerThousand,
+      gdp_per_capita: newGDPPerCapita,
+      life_expectancy: newLifeExpectancy
     };
 
     try {
@@ -205,7 +211,9 @@ const YourLocationsTab = (props: any) => {
       population_density: editPopulationDensity,
       median_age: editMedianAge,
       aged_65_older: editAged65Older,
-      hospital_beds_per_thousand: editHospitalBedsPerThousand
+      hospital_beds_per_thousand: editHospitalBedsPerThousand,
+      gdp_per_capita: editGDPPerCapita,
+      life_expectancy: editLifeExpectancy
     };
 
     try {
@@ -270,6 +278,8 @@ const YourLocationsTab = (props: any) => {
       setEditMedianAge(selectedLocation.median_age);
       setEditAged65Older(selectedLocation.aged_65_older);
       setEditHospitalBedsPerThousand(selectedLocation.hospital_beds_per_thousand);
+      setEditGDPPerCapita(selectedLocation.gdp_per_capita);
+      setEditLifeExpectancy(selectedLocation.life_expectancy);
       setEditIsPublic(selectedLocation.is_public);
     }
   }
@@ -488,6 +498,30 @@ const YourLocationsTab = (props: any) => {
                 setIsSaved(false);
               }}
             />
+            <TextField
+              fullWidth
+              label="GDP per capita ($)"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newGDPPerCapita || ''}
+              onChange={(e) => {
+                setNewGDPPerCapita(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Life expectancy"
+              variant="standard"
+              type="number"
+              size='small'
+              value={newLifeExpectancy || ''}
+              onChange={(e) => {
+                setNewLifeExpectancy(Number(e.target.value));
+                setIsSaved(false);
+              }}
+            />
             <FormGroup sx={{alignItems: 'flex-start'}}>
               <FormControlLabel sx={{marginLeft: 0}} control={
                 <Switch checked={newIsPublic} onChange={(e) => {
@@ -586,6 +620,8 @@ const YourLocationsTab = (props: any) => {
                         <TableCell>Median Age</TableCell>
                         <TableCell>Aged 65+</TableCell>
                         <TableCell>Hosp. Beds per 1K</TableCell>
+                        <TableCell>GDP per Capita</TableCell>
+                        <TableCell>Life Expectancy</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -595,6 +631,8 @@ const YourLocationsTab = (props: any) => {
                         <TableCell>{selectedLocation.median_age || 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.aged_65_older ? selectedLocation.aged_65_older + '%' : 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.hospital_beds_per_thousand || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.gdp_per_capita ? '$' + selectedLocation.gdp_per_capita : 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.life_expectancy || 'Unknown'}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -702,6 +740,28 @@ const YourLocationsTab = (props: any) => {
                       value={editHospitalBedsPerThousand || ''}
                       onChange={(e) => {
                         setEditHospitalBedsPerThousand(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="GDP per capita ($)"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editGDPPerCapita || ''}
+                      onChange={(e) => {
+                        setEditGDPPerCapita(Number(e.target.value));
+                        setIsEditSaved(false);
+                      }}
+                    />
+                    <TextField
+                      label="Life expectancy"
+                      variant="standard"
+                      type="number"
+                      size='small'
+                      value={editLifeExpectancy || ''}
+                      onChange={(e) => {
+                        setEditLifeExpectancy(Number(e.target.value));
                         setIsEditSaved(false);
                       }}
                     />

@@ -230,6 +230,8 @@ const LocationsTab = (props: any) => {
                         <TableCell>Median Age</TableCell>
                         <TableCell>Aged 65+</TableCell>
                         <TableCell>Hosp. Beds per 1K</TableCell>
+                        <TableCell>GDP per Capita</TableCell>
+                        <TableCell>Life Expectancy</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -239,6 +241,8 @@ const LocationsTab = (props: any) => {
                         <TableCell>{selectedLocation.median_age || 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.aged_65_older ? selectedLocation.aged_65_older + '%' : 'Unknown'}</TableCell>
                         <TableCell>{selectedLocation.hospital_beds_per_thousand || 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.gdp_per_capita ? '$' + selectedLocation.gdp_per_capita : 'Unknown'}</TableCell>
+                        <TableCell>{selectedLocation.life_expectancy || 'Unknown'}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

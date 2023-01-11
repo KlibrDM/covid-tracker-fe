@@ -10,4 +10,6 @@ export interface ICustomLocation {
   median_age?: number;
   aged_65_older?: number;
   hospital_beds_per_thousand?: number;
+  gdp_per_capita?: number;
+  life_expectancy?: number;
 }
