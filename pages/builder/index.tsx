@@ -142,7 +142,8 @@ const Builder: NextPage = (props: any) => {
 
   const buildChart = async () => {
     const datasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [];
-    const labels: Set<string> = new Set();
+    let labels: Set<string> = new Set();
+    const defaultDataWithDate = createDataWithDate(startDate, endDate);
 
     for(let i = 0; i < chipData.length; i++){
       const e = chipData[i];
@@ -159,6 +160,8 @@ const Builder: NextPage = (props: any) => {
         tension: 0.1,
       };
 
+      const dataWithDate = _.cloneDeep(defaultDataWithDate);
+
       const perNumber = 1000000;
       const population = !e.is_custom_location
         ? locations.find(elem => elem.code === e.location_code)?.population ?? perNumber
@@ -167,24 +170,31 @@ const Builder: NextPage = (props: any) => {
       //if key is not a 'new' value, fill empty spaces with last data
       let lastData = 0;
       data.forEach(dataDay => {
-        labels.add(moment(dataDay.date).format('YYYY-MM-DD'));
-        if(dataDay[e.indicator.key as keyof typeof dataDay]){
-          let dayData = dataDay[e.indicator.key as keyof typeof dataDay] as number;
+        const currentMoment = moment(dataDay.date).format('YYYY-MM-DD');
+        const currentDay = dataWithDate.find(e => e.date === currentMoment);
 
-          if(e.indicator.per_million){
-            dayData = (dayData! / population) * perNumber
-          }
+        if(currentDay){
+          if(dataDay[e.indicator.key as keyof typeof dataDay]){
+            let dayData = dataDay[e.indicator.key as keyof typeof dataDay] as number;
 
-          //Save last data only if key is not new value
-          if(!e.indicator.key.includes('new')){
-            lastData = dayData!;
+            if(e.indicator.per_million){
+              dayData = (dayData! / population) * perNumber
+            }
+
+            //Save last data only if key is not new value
+            if(!e.indicator.key.includes('new')){
+              lastData = dayData!;
+            }
+            currentDay.value = dayData!;
           }
-          dataset.data.push(dayData!);
-        }
-        else{
-          dataset.data.push(lastData);
+          else{
+            currentDay.value = lastData;
+          }
         }
       });
+
+      dataset.data = dataWithDate.map(e => e.value);
+      labels = new Set(dataWithDate.map(e => e.date));
 
       if(e.indicator.average){
         if(e.indicator.average === 7){
@@ -214,6 +224,16 @@ const Builder: NextPage = (props: any) => {
       customChartRef.current.resetZoom();
     }
   };
+
+  const createDataWithDate = (startDate: moment.Moment, endDate: moment.Moment) => {
+    const data: { date: string, value: number }[] = [];
+    const currentDate = moment(startDate);
+    while (currentDate.isSameOrBefore(endDate)) {
+      data.push({ date: moment(currentDate).format('YYYY-MM-DD'), value: 0 });
+      currentDate.add(1, 'days');
+    }
+    return data;
+  }
 
   const handleSave = async () => {
     const payload: IChart = {
