@@ -221,7 +221,7 @@ const CustomLocationsTab = (props: any) => {
               }
               </div>
             </>
-          : <Alert severity="error">No public locations found!</Alert>
+          : <Alert severity="warning">No public locations found!</Alert>
           : <div className={styles.spinner_container}>
               <CircularProgress />
             </div>
