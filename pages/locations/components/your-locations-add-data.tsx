@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { IData } from '../../../models/data';
 import TextField from '@mui/material/TextField';
 import SaveIcon from '@mui/icons-material/Save';
-import { Button, Snackbar, Alert } from '@mui/material';
+import { Button, Snackbar, Alert, DialogContentText } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import moment from 'moment';
-import { addCustomLocationData } from '../../../lib/custom-location-data.service';
+import { addCustomLocationData, addCustomLocationDataset } from '../../../lib/custom-location-data.service';
+import csv from 'csvtojson';
 
 const YourLocationsAddData = (props: any) => {
   const user = props.user || {};
@@ -41,6 +42,85 @@ const YourLocationsAddData = (props: any) => {
       setSnackbarSeverity('error');
       setSnackbarMessage('Error saving data');
       setSnackbarOpen(true);
+    }
+  };
+
+  const handleUpload = async (e: any) => {
+    const reader = new FileReader();
+
+    reader.onload = async ({ target }) => {
+      if (target && target.result) {
+        try {
+          let jsonObj: IData[] = await csv().fromString(target.result as string);
+
+          if(jsonObj.length === 0) {
+            throw 404;
+          }
+
+          // Add location & filter unfilled data
+          jsonObj = jsonObj.map((obj: IData) => ({
+            location_code: location,
+            date: obj.date,
+            total_cases: obj.total_cases || undefined,
+            new_cases: obj.new_cases || undefined,
+            total_deaths: obj.total_deaths || undefined,
+            new_deaths: obj.new_deaths || undefined,
+            reproduction_rate: obj.reproduction_rate || undefined,
+            icu_patients: obj.icu_patients || undefined,
+            hosp_patients: obj.hosp_patients || undefined,
+            weekly_icu_admissions: obj.weekly_icu_admissions || undefined,
+            weekly_hosp_admissions: obj.weekly_hosp_admissions || undefined,
+            total_tests: obj.total_tests || undefined,
+            new_tests: obj.new_tests || undefined,
+            positive_rate: obj.positive_rate || undefined,
+            test_units: obj.test_units || undefined,
+            total_vaccinations: obj.total_vaccinations || undefined,
+            people_vaccinated: obj.people_vaccinated || undefined,
+            people_fully_vaccinated: obj.people_fully_vaccinated || undefined,
+            total_boosters: obj.total_boosters || undefined,
+            new_vaccinations: obj.new_vaccinations || undefined,
+            stringency_index: obj.stringency_index || undefined,
+            excess_mortality: obj.excess_mortality || undefined,
+            excess_mortality_cumulative: obj.excess_mortality_cumulative || undefined,
+          }));
+
+          await addCustomLocationDataset(jsonObj, user.token).then((res: any) => {
+            if(!res.message) {
+              setSnackbarSeverity('success');
+              setSnackbarMessage('Data successfully saved from file');
+              setSnackbarOpen(true);
+              refreshData();
+            }
+            else{
+              setSnackbarSeverity("error");
+              setSnackbarMessage(res.message);
+              setSnackbarOpen(true);
+            }
+          });
+        }
+        catch (err) {
+          setSnackbarSeverity('error');
+          setSnackbarMessage('Error saving data from file');
+          setSnackbarOpen(true);
+        }
+      }
+    };
+
+    if (e.target.files[0]) {
+      if(e.target.files[0].type !== 'text/csv') {
+        setSnackbarSeverity('error');
+        setSnackbarMessage('File must be a CSV');
+        setSnackbarOpen(true);
+        return;
+      }
+      if(e.target.files[0].size > 10000000) {
+        setSnackbarSeverity('error');
+        setSnackbarMessage('File must be less than 10MB');
+        setSnackbarOpen(true);
+        return;
+      }
+
+      reader.readAsText(e.target.files[0]);
     }
   };
 
@@ -279,6 +359,34 @@ const YourLocationsAddData = (props: any) => {
         >
           Add
         </Button>
+      </div>
+
+      <div>
+        <DialogContentText sx={{marginBlockStart: '0.4em', marginBlockEnd: '0.4em'}}>
+          You can also add new data from a CSV file using the template below.
+        </DialogContentText>
+        <div style={{display: 'flex', gap: '8px'}}>
+          <a href={'data-template.csv'} download>
+            <Button
+              variant="outlined"
+            >
+              Download template
+            </Button>
+          </a>
+          <Button
+            variant="outlined"
+            color='success'
+            component="label"
+          >
+            Upload data from file
+            <input
+              type="file"
+              accept=".csv"
+              onChange={handleUpload}
+              hidden
+            />
+          </Button>
+        </div>
       </div>
 
       <Snackbar

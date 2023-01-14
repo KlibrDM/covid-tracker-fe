@@ -294,8 +294,10 @@ const YourLocationsTab = (props: any) => {
         undefined,
         true
       ).then((data: IData[]) => {
-        //Reverse the response to get the most recent data first
-        data.reverse();
+        //Sort the response to get the most recent data first
+        data.sort((a: IData, b: IData) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
 
         setRawData(data);
 
