@@ -17,6 +17,7 @@
     "@mui/x-date-pickers": "^5.0.6",
     "@types/lodash": "^4.14.186",
     "chart.js": "^3.9.1",
+    "chartjs-plugin-annotation": "^2.1.2",
     "chartjs-plugin-zoom": "^1.2.1",
     "cookie": "^0.5.0",
     "csvtojson": "^2.0.10",

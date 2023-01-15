@@ -15,11 +15,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import RunDialog from './components/run-dialog';
-import { ISimulation, ISimulationQuery } from '../../models/simulation';
+import { ISimulation, ISimulationQuery, ISimulationResultSummary } from '../../models/simulation';
 import { deleteSimulation, getSimulation, getSimulationsPersonal, getSimulationsPublic, runSimulation, saveSimulation, updateSimulation } from '../../lib/simulation.service';
 import moment from 'moment';
-import { COMMON_CHART_OPTIONS } from '../../lib/chart-options';
-import { CASES_COLOR, CASES_FILL_COLORS, DEATHS_COLOR, DEATHS_FILL_COLORS, MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../lib/constants';
+import { SIM_CHART_OPTIONS } from '../../lib/chart-options';
+import { CASES_COLOR, CASES_FILL_COLORS, DEATHS_COLOR, DEATHS_FILL_COLORS, HOSPITAL_COLOR, HOSPITAL_FILL_COLORS, ICU_COLOR, ICU_FILL_COLORS, MAX_RESULTS_LIMIT, RESULTS_LIMIT } from '../../lib/constants';
 import { isChartEmpty } from '../../utils/isChartEmpty';
 import { Card, CardContent, CircularProgress, IconButton } from '@mui/material';
 import { SIMULATION_DATASETS } from '../../lib/simulation-datasets';
@@ -28,8 +28,15 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import { useRouter } from 'next/router';
+import { IData } from '../../models/data';
+import { getData } from '../../lib/data.service';
+import { fourteenDayAverage } from '../../utils/calculate-14-day-average';
+import { sevenDayTotal } from '../../utils/calculate-7-day-total';
+import annotationPlugin from 'chartjs-plugin-annotation';
+import DialogContentText from '@mui/material/DialogContentText';
 
 Chart.register(CategoryScale);
+Chart.register(annotationPlugin);
 
 const Simulation: NextPage = (props: any) => {
   const router = useRouter();
@@ -49,6 +56,7 @@ const Simulation: NextPage = (props: any) => {
 
   const [chartReady, setChartReady] = useState<boolean>(false);
   const [simData, setSimData] = useState<(ISimulation & { _id?: string })>();
+  const [simSummary, setSimSummary] = useState<ISimulationResultSummary>();
   const [simName, setSimName] = useState<string>("New simulation");
   const [simIsPublic, setSimIsPublic] = useState<boolean>(false);
   const [simIsSaved, setSimIsSaved] = useState<boolean>(true);
@@ -56,11 +64,15 @@ const Simulation: NextPage = (props: any) => {
   const [totalCasesChart, setTotalCasesChart] = useState<ChartConfiguration>();
   const [newDeathsChart, setNewDeathsChart] = useState<ChartConfiguration>();
   const [totalDeathsChart, setTotalDeathsChart] = useState<ChartConfiguration>();
+  const [icuPatientsChart, setIcuPatientsChart] = useState<ChartConfiguration>();
+  const [hospPatientsChart, setHospPatientsChart] = useState<ChartConfiguration>();
 
   const newCasesChartRef = useRef(null);
   const totalCasesChartRef = useRef(null);
   const newDeathsChartRef = useRef(null);
   const totalDeathsChartRef = useRef(null);
+  const icuPatientsChartRef = useRef(null);
+  const hospPatientsChartRef = useRef(null);
 
   const handleNewSimulationClickOpen = () => {
     setIsRunDialogOpen(true);
@@ -131,13 +143,30 @@ const Simulation: NextPage = (props: any) => {
     getSims();
   }
 
-  const loadCharts = (data: ISimulation) => {
+  const loadCharts = async (data: ISimulation) => {
     const chartLabels = data.new_cases.map((e, i) => moment(data.start_date).add(i, 'days').format('YYYY-MM-DD'));
     
+    //Add to chart labels past dates
+    let pastDateCurrent = moment(data.start_date).subtract(1, 'day');
+    const pastDateEndDate = moment(data.start_date).subtract(61, 'days');
+    while (pastDateCurrent.isAfter(pastDateEndDate)) {
+      chartLabels.unshift(pastDateCurrent.format('YYYY-MM-DD'));
+      pastDateCurrent.subtract(1, 'day');
+    }
+
+    const {
+      past_new_cases,
+      past_new_deaths,
+      past_total_cases,
+      past_total_deaths,
+      past_hosp_patients,
+      past_icu_patients
+    } = await getPastData(data.start_date, data.location_code);
+
     const newCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
       {
         label: 'New Cases',
-        data: data.new_cases,
+        data: [...past_new_cases, ...data.new_cases],
         fill: CASES_FILL_COLORS,
         backgroundColor: CASES_COLOR,
         borderColor: CASES_COLOR,
@@ -152,14 +181,14 @@ const Simulation: NextPage = (props: any) => {
         labels: chartLabels,
         datasets: newCasesChartDatasets
       },
-      options: COMMON_CHART_OPTIONS
+      options: SIM_CHART_OPTIONS
     };
     setNewCasesChart(newCasesChartConfiguration);
 
     const totalCasesChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
       {
         label: 'Total Cases',
-        data: data.total_cases,
+        data: [...past_total_cases, ...data.total_cases],
         fill: CASES_FILL_COLORS,
         backgroundColor: CASES_COLOR,
         borderColor: CASES_COLOR,
@@ -174,14 +203,14 @@ const Simulation: NextPage = (props: any) => {
         labels: chartLabels,
         datasets: totalCasesChartDatasets
       },
-      options: COMMON_CHART_OPTIONS
+      options: SIM_CHART_OPTIONS
     };
     setTotalCasesChart(totalCasesChartConfiguration);
 
     const newDeathsChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
       {
         label: 'New Deaths',
-        data: data.new_deaths,
+        data: [...past_new_deaths, ...data.new_deaths],
         fill: DEATHS_FILL_COLORS,
         backgroundColor: DEATHS_COLOR,
         borderColor: DEATHS_COLOR,
@@ -196,14 +225,14 @@ const Simulation: NextPage = (props: any) => {
         labels: chartLabels,
         datasets: newDeathsChartDatasets
       },
-      options: COMMON_CHART_OPTIONS
+      options: SIM_CHART_OPTIONS
     };
     setNewDeathsChart(newDeathsChartConfiguration);
 
     const totalDeathsChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
       {
         label: 'Total Deaths',
-        data: data.total_deaths,
+        data: [...past_total_deaths, ...data.total_deaths],
         fill: DEATHS_FILL_COLORS,
         backgroundColor: DEATHS_COLOR,
         borderColor: DEATHS_COLOR,
@@ -218,13 +247,84 @@ const Simulation: NextPage = (props: any) => {
         labels: chartLabels,
         datasets: totalDeathsChartDatasets
       },
-      options: COMMON_CHART_OPTIONS
+      options: SIM_CHART_OPTIONS
     };
     setTotalDeathsChart(totalDeathsChartConfiguration);
+
+    const icuPatientsChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+      {
+        label: 'ICU Admissions',
+        data: [...past_icu_patients, ...sevenDayTotal(data.icu_patients)],
+        fill: ICU_FILL_COLORS,
+        backgroundColor: ICU_COLOR,
+        borderColor: ICU_COLOR,
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.1
+      }
+    ];
+    const icuPatientsChartConfiguration: ChartConfiguration = {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: icuPatientsChartDatasets
+      },
+      options: SIM_CHART_OPTIONS
+    };
+    setIcuPatientsChart(icuPatientsChartConfiguration);
+
+    const hospPatientsChartDatasets: ChartDataset<keyof ChartTypeRegistry, (number | ScatterDataPoint | BubbleDataPoint | null)[]>[] = [
+      {
+        label: 'Hospital Admissions',
+        data: [...past_hosp_patients, ...sevenDayTotal(data.hosp_patients)],
+        fill: HOSPITAL_FILL_COLORS,
+        backgroundColor: HOSPITAL_COLOR,
+        borderColor: HOSPITAL_COLOR,
+        borderWidth: 1,
+        pointRadius: 0,
+        tension: 0.1
+      }
+    ];
+    const hospPatientsChartConfiguration: ChartConfiguration = {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: hospPatientsChartDatasets
+      },
+      options: SIM_CHART_OPTIONS
+    };
+    setHospPatientsChart(hospPatientsChartConfiguration);
 
     setSimData(data);
     setSimName(data.name);
     setSimIsPublic(data.is_public);
+    setSimSummary({
+      total_new_cases: data.new_cases.reduce((a, b) => a + b, 0),
+      total_new_deaths: data.new_deaths.reduce((a, b) => a + b, 0),
+      peak_new_cases: data.new_cases.length ? Math.max(...data.new_cases) : 0,
+      peak_new_deaths: data.new_deaths.length ? Math.max(...data.new_deaths) : 0,
+      peak_icu_patients: data.icu_patients.length ? Math.max(...data.icu_patients) : 0,
+      peak_hosp_patients: data.hosp_patients.length ? Math.max(...data.hosp_patients) : 0,
+    });
+  }
+
+  const getPastData = async (startDate: Date, location: string) => {
+    const pastData: IData[] = await getData(location, ['new_cases', 'total_cases', 'new_deaths', 'total_deaths', 'icu_patients', 'hosp_patients'], moment(startDate).subtract(3, 'months').format('YYYY-MM-DD'));
+    const past_new_cases = fourteenDayAverage(pastData.map(e => e.new_cases || 0)).slice(-60);
+    const past_new_deaths = fourteenDayAverage(pastData.map(e => e.new_deaths || 0)).slice(-60);
+    const past_total_cases = pastData.map(e => e.total_cases || 0).slice(-60);
+    const past_total_deaths = pastData.map(e => e.total_deaths || 0).slice(-60);
+    const past_icu_patients = pastData.map(e => e.icu_patients || 0).slice(-60);
+    const past_hosp_patients = pastData.map(e => e.hosp_patients || 0).slice(-60);
+
+    return {
+      past_new_cases,
+      past_total_cases,
+      past_new_deaths,
+      past_total_deaths,
+      past_icu_patients,
+      past_hosp_patients,
+    }
   }
 
   useEffect(() => {
@@ -416,6 +516,50 @@ const Simulation: NextPage = (props: any) => {
               </Button>
             </div>
 
+            <div>
+              <h3>Summary</h3>
+              <DialogContentText sx={{marginBlockStart: '0em', marginBlockEnd: '0.6em', fontSize: '0.8rem'}}>
+                Totals and peaks during the simulation.
+              </DialogContentText>
+              <div className={styles.sim_summary_cards}>
+                <Card className={styles.sim_summary_card}>
+                  <CardContent className={styles.sim_summary_card_content}>
+                    <h4>Total new cases: {simSummary?.total_new_cases || 0}</h4>
+                  </CardContent>
+                </Card>
+                <Card className={styles.sim_summary_card}>
+                  <CardContent className={styles.sim_summary_card_content}>
+                    <h4>Peak new cases: {simSummary?.peak_new_cases || 0}</h4>
+                  </CardContent>
+                </Card>
+                <Card className={styles.sim_summary_card}>
+                  <CardContent className={styles.sim_summary_card_content}>
+                    <h4>Peak hospital patients: {simSummary?.peak_hosp_patients || 0}</h4>
+                  </CardContent>
+                </Card>
+                <Card className={styles.sim_summary_card}>
+                  <CardContent className={styles.sim_summary_card_content}>
+                    <h4>Total new deaths: {simSummary?.total_new_deaths || 0}</h4>
+                  </CardContent>
+                </Card>
+                <Card className={styles.sim_summary_card}>
+                  <CardContent className={styles.sim_summary_card_content}>
+                    <h4>Peak new deaths: {simSummary?.peak_new_deaths || 0}</h4>
+                  </CardContent>
+                </Card>
+                <Card className={styles.sim_summary_card}>
+                  <CardContent className={styles.sim_summary_card_content}>
+                    <h4>Peak ICU patients: {simSummary?.peak_icu_patients || 0}</h4>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <h3>Charts</h3>
+            <DialogContentText sx={{marginBlockStart: '0em', marginBlockEnd: '0em', fontSize: '0.8rem'}}>
+              Data before the red line is real, data after the red line is simulated.
+            </DialogContentText>
+
             <div className={styles.multi_charts_section}>
               <div className={styles.single_chart_section}>
                 <p>Estimated New Cases</p>
@@ -469,6 +613,37 @@ const Simulation: NextPage = (props: any) => {
                     chartReady
                     ? totalDeathsChart && !isChartEmpty(totalDeathsChart.data.datasets)
                       ? <ChartJS ref={totalDeathsChartRef} type={totalDeathsChart.type} data={totalDeathsChart.data} options={totalDeathsChart.options}/>
+                      : <p className={styles.chart_no_data_text}>No data to display</p>
+                    : <div className={styles.spinner_container}>
+                        <CircularProgress />
+                      </div>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.multi_charts_section}>
+              <div className={styles.single_chart_section}>
+                <p>Estimated Hospital Admissions</p>
+                <div className={styles.chart_container}>
+                  {
+                    chartReady
+                    ? hospPatientsChart && !isChartEmpty(hospPatientsChart.data.datasets)
+                      ? <ChartJS ref={hospPatientsChartRef} type={hospPatientsChart.type} data={hospPatientsChart.data} options={hospPatientsChart.options}/>
+                      : <p className={styles.chart_no_data_text}>No data to display</p>
+                    : <div className={styles.spinner_container}>
+                        <CircularProgress />
+                      </div>
+                  }
+                </div>
+              </div>
+              <div className={styles.single_chart_section}>
+                <p>Estimated ICU Admissions</p>
+                <div className={styles.chart_container}>
+                  {
+                    chartReady
+                    ? icuPatientsChart && !isChartEmpty(icuPatientsChart.data.datasets)
+                      ? <ChartJS ref={icuPatientsChartRef} type={icuPatientsChart.type} data={icuPatientsChart.data} options={icuPatientsChart.options}/>
                       : <p className={styles.chart_no_data_text}>No data to display</p>
                     : <div className={styles.spinner_container}>
                         <CircularProgress />

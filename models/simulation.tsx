@@ -11,6 +11,15 @@ export interface ISimulationQuery {
   simulation_parameters: ISimulationParameter[];
 }
 
+export interface ISimulationResultSummary {
+  total_new_cases: number;
+  total_new_deaths: number;
+  peak_new_cases: number;
+  peak_new_deaths: number;
+  peak_icu_patients: number;
+  peak_hosp_patients: number;
+}
+
 export interface ISimulation {
   ownerId: string;
   is_public: boolean;
@@ -23,4 +32,6 @@ export interface ISimulation {
   new_cases: number[];
   total_deaths: number[];
   new_deaths: number[];
+  icu_patients: number[];
+  hosp_patients: number[];
 }

@@ -1,5 +1,6 @@
 import { BubbleDataPoint, ChartDataset, ChartTypeRegistry, CoreChartOptions, DatasetChartOptions, ElementChartOptions, PluginChartOptions, ScaleChartOptions, ScatterDataPoint } from "chart.js";
 import { _DeepPartialObject } from "chart.js/types/utils";
+import { AnnotationOptions, AnnotationTypeRegistry } from "chartjs-plugin-annotation";
 
 export const COMMON_CHART_OPTIONS: _DeepPartialObject<CoreChartOptions<keyof ChartTypeRegistry> & ElementChartOptions<keyof ChartTypeRegistry> & PluginChartOptions<keyof ChartTypeRegistry> & DatasetChartOptions<keyof ChartTypeRegistry> & ScaleChartOptions<keyof ChartTypeRegistry>> = {
   responsive: true,
@@ -133,6 +134,46 @@ export const HOME_CHART_OPTIONS: _DeepPartialObject<CoreChartOptions<keyof Chart
     legend: {
       position: 'bottom',
       reverse: true
+    }
+  },
+}
+
+export const SIM_CHART_OPTIONS: _DeepPartialObject<CoreChartOptions<keyof ChartTypeRegistry> & ElementChartOptions<keyof ChartTypeRegistry> & PluginChartOptions<keyof ChartTypeRegistry> & DatasetChartOptions<keyof ChartTypeRegistry> & ScaleChartOptions<keyof ChartTypeRegistry> & AnnotationOptions<keyof AnnotationTypeRegistry>>= {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    intersect: false,
+    mode: 'index',
+  },
+  plugins: {
+    legend: {
+      position: 'bottom',
+      reverse: true
+    },
+    zoom: {
+      zoom: {
+        drag:{
+          enabled: true,
+        },
+        wheel: {
+          enabled: true,
+        },
+        pinch: {
+          enabled: true
+        },
+        mode: 'x'
+      }
+    },
+    annotation: {
+      annotations: {
+        line1: {
+          type: 'line',
+          scaleID: 'x',
+          value: 59.5,
+          borderColor: 'rgb(255, 0, 0)',
+          borderWidth: 2,
+        }
+      }
     }
   },
 }
